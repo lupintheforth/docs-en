@@ -1,0 +1,190 @@
+## One-on-One Chatting/Group Chats
+
+### Create conversation
+
+In table `_Conversation`, the default ACL authority requires master key to create.
+
+```sh
+curl -X POST \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"My First Conversation", "m": ["BillGates", "SteveJobs"], "unique": true}' \
+  https://{{host}}/1.2/rtm/conversations
+```
+
+The above instance will create an elementary conversation, including two initial participants having client ID 'BillGates' and 'SteveJobs'. A success creation will return the objectId. Namely , the rtm message ID. The client terminal can send message with this code. The created conversations can be queried from table `_Conversation`. Strings in conversations can refer to the [Conversation](realtime_v2.html#Conversation) in Realtime Message - guide. Inputting `"unique": true` will ensure the uniqueness of the conversation.
+
+return
+```
+{"objectId"=>"5a5d7432c3422b31ed845e75", "createdAt"=>"2018-01-16T03:40:32.814Z"}
+```
+
+The only distinction between One-on-One Chatting and Group Chats is the number of the clients. The two share the same API.
+
+### Query conversation(s)
+
+In table `_Conversation`, the default ACL authority requires master key to query.
+
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  -G \
+  --data-urlencode 'where={"name": "first conversation"}' \
+  --data-urlencode 'skip=1' \
+  --data-urlencode 'limit=20' \
+  https://{{host}}/1.2/rtm/conversations
+```
+
+Parameters | Optionality | Description
+---|---|---
+skip |optional |
+limit | optional | together with 'skip' to realize paging
+where | optional | see [Leanstorage - Query](rest_api.html#Query).
+
+
+return
+```
+{"results"=>[{"name"=>"test conv1", "m"=>["tom", "jerry"], "createdAt"=>"2018-01-17T04:15:33.386Z", "updatedAt"=>"2018-01-17T04:15:33.386Z", "objectId"=>"5a5ecde6c3422b738c8779d7"}]}
+```
+
+### Update conversation
+
+In table `_Conversation`, the default ACL authority requires master key to mutate.
+
+```sh
+curl -X PUT \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Updated Conversation"}' \
+  https://{{host}}/1.2/rtm/conversations/{conv_id}
+```
+
+`_Conversation` table can get updated via this interface except the m string.
+
+return
+```
+{"updatedAt"=>"2018-01-16T03:40:37.683Z", "objectId"=>"5a5d7433c3422b31ed845e76"}
+```
+
+### Delete conversation
+
+In table `_Conversation`, the default ACL authority requires master key to mutate.
+
+```sh
+curl -X DELETE \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  https://{{host}}/1.2/rtm/conversations/{conv_id}
+```
+
+return
+```
+{}
+```
+
+### Add user(s)
+
+In table `_Conversation`, the default ACL authority requires master key to mutate.
+
+```sh
+curl -X POST \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  -H "Content-Type: application/json" \
+  -d '{"client_ids": ["Tom", "Jerry"]}' \
+  https://{{host}}/1.2/rtm/conversations/{conv_id}/members
+```
+
+return
+```
+{"updatedAt"=>"2018-01-16T03:40:37.683Z", "objectId"=>"5a5d7433c3422b31ed845e76"}
+```
+
+### Remove user(s)
+
+In table `_Conversation`, the default ACL authority requires master key to mutate.
+
+```sh
+curl -X DELETE \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  -H "Content-Type: application/json" \
+  -d '{"client_ids": ["Tom", "Jerry"]}' \
+  https://{{host}}/1.2/rtm/conversations/{conv_id}/members
+```
+
+return
+```
+{"updatedAt"=>"2018-01-16T03:40:37.683Z", "objectId"=>"5a5d7433c3422b31ed845e76"}
+```
+
+### Query user(s)
+
+In table `_Conversation`, the default ACL authority requires master key to access.
+
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  https://{{host}}/1.2/rtm/conversations/{conv_id}/members
+```
+
+return
+
+```
+{"result": ["client1","client2"]}
+```
+
+### add mute user(s)
+
+In table `_Conversation`, the default ACL authority requires master key to access.
+
+```sh
+curl -X POST \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  -H "Content-Type: application/json" \
+  -d '{"client_ids": ["Tom", "Jerry"]}' \
+  https://{{host}}/1.2/rtm/conversations/{conv_id}/mutes
+```
+
+return
+
+```
+{"updatedAt"=>"2018-01-16T03:40:37.683Z", "objectId"=>"5a5d7433c3422b31ed845e76"}
+```
+
+### Query the mute user(s)
+
+In table `_Conversation`, the default ACL authority requires master key to access.
+
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  https://{{host}}/1.2/rtm/conversations/{conv_id}/mutes
+```
+
+返回
+
+```
+{"result": ["client1", "client2"]}
+```
+
+### One-on-One Chatting/Group Chats-send messages
+
+This interface requires master key.
+
+```sh
+curl -X POST \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  -H "Content-Type: application/json" \
+  -d '{"from_client": "", "message": ""}' \
+  https://{{host}}/1.2/rtm/conversations/{conv_id}/messages
+```
+
+**warning**
