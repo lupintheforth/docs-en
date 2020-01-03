@@ -30,10 +30,7 @@ With regard to the concept of "Conversation" , we have categorized it into three
 In addition, the client related requests are labelled with `rtm/clients`.  
 Lastly, some [global APIs] (#Global API) are labelled with `rtm/{function}`, like `rtm/all-conversations` will search for conversations of all types.
 
-<!-- {% include "views/_rtm_rest_api_v2_normal.njk" %}
-{% include "views/_rtm_rest_api_v2_chatroom.njk" %}
-{% include "views/_rtm_rest_api_v2_system.njk" %}
-{% include "views/_rtm_rest_api_v2_client.njk" %} -->
+
 
 ## Global API
 
