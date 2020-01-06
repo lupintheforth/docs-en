@@ -2,7 +2,7 @@
 
 ## Request Format
 
-For POST and PUT request, the body of the requests should be JSON. The Content-Type need configured as `application/json`.
+For POST and PUT requests, the body of the requests should be JSON. The Content-Type need configured as `application/json`.
 
 ## Authentication
 
@@ -28,8 +28,8 @@ With regard to the concept of "Conversation" , we have categorized it into three
 - Official Accounts and bots, related API is labelled with `rtm/service-conversations`. In `_Conversation` table , `sys` is set to true to indicate this.
 
 In addition, the client related requests are labelled with `rtm/clients`.  
-Lastly, some [global APIs] (#Global API) are labelled with `rtm/{function}`, like `rtm/all-conversations` will search for conversations of all types.
 
+Lastly, some [global APIs](#Global_API) are labelled with `rtm/{function}`, like `rtm/all-conversations` will search for conversations of all types.
 
 ## Global API
 
