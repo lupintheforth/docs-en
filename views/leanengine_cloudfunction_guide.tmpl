@@ -2151,7 +2151,7 @@ You can also disable Master Key for a single operation with `useMasterKey: false
 
 So when should global Master Key be enabled?
 
-- If your cloud functions mainly perform operations for global data, enabling Master Key will make these operations easier to be completed. Make sure to implement permission verifications in your program carefully.
+- If your cloud functions mainly perform operations for global data, enabling Master Key will make these operations easier to be completed. Make sure to implement permission verification in your program carefully.
 - If your cloud functions mainly perform operations that are related to each single user, disabling Master Key would make your application more secure. Your program can still take in the `sessionToken` from each request for certain operations (like saving objects).
 {% endif %}
 

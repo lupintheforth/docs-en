@@ -1,0 +1,27 @@
+{% from "views/_helper.njk" import alert %}
+
+{% macro paramsRequestCaptcha(showExtra=false) %}
+| Name | Type | Default Value | Description |
+| --- | --- | --- | --- |
+| `width` | `number` | `85` | The width of the CAPTCHA image in pixel. Can be any number from 60 to 200. |
+| `height` | `number` | `30` | The height of the CAPTCHA image in pixel. Can be any number from 30 to 100. |
+{% if showExtra -%}
+| `size` | `number` | `4` | The length of characters. Can be any number from 3 to 6 (requires `masterKey`). |
+| `ttl` | `number` | `60` | The number of seconds the CAPTCHA is valid. Can be any number from 10 to 180 (requires `masterKey`). |
+{%- endif %}
+{% endmacro %}
+
+{% macro signature(heading="") -%}
+{% if heading != "" %}{{ heading }}{% endif %}
+
+A signature is a string that gets quoted inside `【】` which indicates the sender of the message. You can create signatures in your app's [Dashboard > Messaging > SMS > Settings > Signatures](https://console.leancloud.app/messaging.html?appid={{appid}}#/message/sms/conf). If your app has multiple signatures, make sure to specify one of them as the **default signature**.
+
+{{ alert("You won't be able to send text messages if you don't have a signature.") }}
+
+**Rules**:
+
+ - A signature should be the name of your app, company, brand, or website and should be identifiable by your users; it should contain 1 to 11 characters (for example, `App A` contains 5 characters);
+ - A signature cannot be a variable;
+ - A signature doesn't need to include `【】`;
+ - An app can have at most 50 signatures.
+{%- endmacro %}
