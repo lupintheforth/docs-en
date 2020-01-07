@@ -52,7 +52,7 @@ return
 
 `online_user_count` indicates the current online users on the app and `user_count_today` indicates the independent users with logged in history today.
 
-### Query all the conversations
+### Query all the Conversations
 
 This interface will return all the One-on-One Chatting/Group Chats/Chat Rooms/Official Accounts and bots. In `_Conversation` the default ACL authority requires the master key to access.
 
@@ -74,7 +74,7 @@ return
 {"results"=>[{"name"=>"test conv1", "m"=>["tom", "jerry"], "createdAt"=>"2018-01-17T04:15:33.386Z", "updatedAt"=>"2018-01-17T04:15:33.386Z", "objectId"=>"5a5ecde6c3422b738c8779d7"}]}
 ```
 
-### Global broadcasts
+### Global Broadcasts
 
 This interface is able to broadcast messages (at most 30 per day) to clients in the app. This interface requires mater key to access.
 
@@ -111,7 +111,7 @@ Frequency limitation:
 
 this interface has frequency limitation , click [here](#interface requests frequency limitation) to view.
 
-### Modify the broadcast messages
+### Modify the Broadcast Messages
 
 This interface requires the master key.
 
@@ -142,7 +142,7 @@ Frequency limitation:
 
 this interface has frequency limitation , click [here](#interface requests frequency limitation) to view.
 
-### Delete broadcast messages
+### Delete Broadcast Messages
 
 The deletions will only occur on the devices do not receive the original message yet. The received broadcast cannot be deleted. This interface requires the master key.
 
@@ -161,7 +161,7 @@ return:
 
 blank JSON object `{}`.
 
-### Query the broadcast messages
+### Query the Broadcast Messages
 
 Invoke this API to query all the valid broadcast messages, this interface requires master key to query.
 
@@ -178,7 +178,7 @@ conv_id | required | official account ID
 limit | optional | quantity of the messages returned
 skip | optional | number of the messages to skip, for paging.
 
-### Query all the messages history in the app
+### Query all the Messages History in the App
 
 This interface requires the master key.
 
@@ -191,7 +191,7 @@ curl -X GET \
 
 Parameters and the returned value can refer to [One-on-One Chatting/Group Chats query the history messages](realtime_rest_api.html#query history messages) interface.
 
-## Interface requests frequency limitation
+## Interface requests Frequency Limitation
 
 Operations related to realtime messages invoking REST API has request frequency and quantity limitations (**realtime message SDK API is not influenced**),  details as follows:
 

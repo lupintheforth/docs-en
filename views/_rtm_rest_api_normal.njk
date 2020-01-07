@@ -1,6 +1,6 @@
 ## One-on-One Chatting/Group Chats
 
-### Create conversation
+### Create Conversation
 
 In table `_Conversation`, the default ACL authority requires master key to create.
 
@@ -22,7 +22,7 @@ return
 
 The only distinction between One-on-One Chatting and Group Chats is the number of the clients. The two share the same API.
 
-### Query conversation(s)
+### Query Conversation(s)
 
 In table `_Conversation`, the default ACL authority requires master key to query.
 
@@ -49,7 +49,7 @@ return
 {"results"=>[{"name"=>"test conv1", "m"=>["tom", "jerry"], "createdAt"=>"2018-01-17T04:15:33.386Z", "updatedAt"=>"2018-01-17T04:15:33.386Z", "objectId"=>"5a5ecde6c3422b738c8779d7"}]}
 ```
 
-### Update conversation
+### Update Conversation(s)
 
 In table `_Conversation`, the default ACL authority requires master key to mutate.
 
@@ -69,7 +69,7 @@ return
 {"updatedAt"=>"2018-01-16T03:40:37.683Z", "objectId"=>"5a5d7433c3422b31ed845e76"}
 ```
 
-### Delete conversation
+### Delete Conversation(s)
 
 In table `_Conversation`, the default ACL authority requires master key to mutate.
 
@@ -85,7 +85,7 @@ return
 {}
 ```
 
-### Add user(s)
+### Add User(s)
 
 In table `_Conversation`, the default ACL authority requires master key to mutate.
 
@@ -103,7 +103,7 @@ return
 {"updatedAt"=>"2018-01-16T03:40:37.683Z", "objectId"=>"5a5d7433c3422b31ed845e76"}
 ```
 
-### Remove user(s)
+### Remove User(s)
 
 In table `_Conversation`, the default ACL authority requires master key to mutate.
 
@@ -121,7 +121,7 @@ return
 {"updatedAt"=>"2018-01-16T03:40:37.683Z", "objectId"=>"5a5d7433c3422b31ed845e76"}
 ```
 
-### Query user(s)
+### Query User(s)
 
 In table `_Conversation`, the default ACL authority requires master key to access.
 
@@ -138,7 +138,7 @@ return
 {"result": ["client1","client2"]}
 ```
 
-### add mute user(s)
+### Add mute User(s)
 
 In table `_Conversation`, the default ACL authority requires master key to access.
 
@@ -157,7 +157,7 @@ return
 {"updatedAt"=>"2018-01-16T03:40:37.683Z", "objectId"=>"5a5d7433c3422b31ed845e76"}
 ```
 
-### Query the mute user(s)
+### Query the mute User(s)
 
 In table `_Conversation`, the default ACL authority requires master key to access.
 
@@ -168,7 +168,7 @@ curl -X GET \
   https://{{host}}/1.2/rtm/conversations/{conv_id}/mutes
 ```
 
-返回
+return
 
 ```
 {"result": ["client1", "client2"]}
