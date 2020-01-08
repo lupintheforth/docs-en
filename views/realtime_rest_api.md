@@ -31,6 +31,8 @@ In addition, the client related requests are labelled with `rtm/clients`.
 
 Lastly, some [global APIs](#Global_API) are labelled with `rtm/{function}`, like `rtm/all-conversations` will search for conversations of all types.
 
+{% include "views/_rtm_rest_api_normal.njk" %}
+
 ## Global API
 
 ### Count the Users
@@ -195,12 +197,66 @@ Parameters and the returned value can refer to [One-on-One Chatting/Group Chats 
 
 Operations related to realtime messages invoking REST API has request frequency and quantity limitations (**realtime message SDK API is not influenced**),  details as follows:
 
-* [One-on-One Chatting/Group Chats- send messages](#One-on-One Chatting/Group Chats- send messages)
-* [One-on-One Chatting/Group Chats- modify messages](#One-on-One Chatting/Group Chats- modify messages)
-* [One-on-One Chatting/Group Chats- recall messages](#One-on-One Chatting/Group Chats- recall messages)
-* [Chats Rooms- send messages](#Chats Rooms- send messages)
-* [Chats Rooms- modify messages](#Chats Rooms- modify messages)
-* [Chats Rooms- recall messages](#Chats Rooms- recalll messages)
-* [Official accounts- send message to any user individually](#send message to any user individually)
-* [Official accounts- modify message to any user individually](#modify message to any user individually)
-* [Official accounts- recall message to any user individually](#recall message to any user individually)
+* [One-on-One Chatting/Group Chats-send messages](#One-on-One Chatting/Group Chats-send messages)
+* [One-on-One Chatting/Group Chats-modify messages](#One-on-One Chatting/Group Chats-modify messages)
+* [One-on-One Chatting/Group Chats-recall messages](#One-on-One Chatting/Group Chats-recall messages)
+* [Chats Rooms-send messages](#Chats Rooms-send messages)
+* [Chats Rooms-modify messages](#Chats Rooms-modify messages)
+* [Chats Rooms-recall messages](#Chats Rooms-recalll messages)
+* [Official accounts-send message to any user individually](#send message to any user individually)
+* [Official accounts-modify message to any user individually](#modify message to any user individually)
+* [Official accounts-recall message to any user individually](#recall message to any user individually)
+
+#### Limitation
+|Business (per App) |Developer (per App) |
+|---------|---------------|
+|maximum 9000 requests/min, 1800 requests/min by default|120 requests/min|
+
+The Daily usage is calculated based on all the interfaces. LeanCloud will respond with error code 429 if exceeds the limitation until one minutes later. The interface will reboot after that.
+
+The Buisness call ceiling can get mutated in [Dashboard > Messaging > LeanMessage > Settings > Thresholds > Frequency limit for calling API for basic messages][dashboard-rtm-limit].
+According to the daily call frequency peak rate , we do differential pricing. As in the following table:
+
+[dashboard-rtm-limit]: /dashboard/messaging.html?appid={{appid}}#/message/realtime/conf
+
+| calling / min | pricing |
+| - | - |
+| - | - |
+| 0 ～ 1800 | 免费 |
+| 1801 ~ 3600 | $6 USD / day |
+| 3601 ~ 5400 | $9 USD / day |
+| 5401 ~ 7200 | $12 USD / day |
+| 7201 ~ 9000 | $15 USD / day 
+
+|Daily calling peak rate can be viewed in [Dashboard > Messaging > LeanMessage > API Peak connections][dashboard-rtm-stats].
+
+[dashboard-rtm-stats]: /dashboard/messaging.html?appid={{appid}}#/message/realtime/stat
+
+### Subscription Messages
+
+* [Send messages to all the subscribers](#Send message to all the subscribers)
+* [Modify all the sent messages](#Modify all the sent messages)
+* [Recall all the sent messages](#Recall all the sent messages)
+
+#### Limitations
+
+|Limitation |Business |Developer |
+|----------|----------|---------------|
+|Frequency limit | 30 times per app /min | 10 times per app/min |
+|Daily usage | 1000 at maximum | 100 at maximum |
+
+The limitation is calculated based on all the interfaces. LeanCloud will respond with error code 429 if exceeds the limitation until one minutes later. The interface will reboot after that. The request will not be proceeded if exceeded the daily usage amount. All the requests will be responded by error 429.
+
+### Brodcast Messages
+* [Global Broadcasts](#Global Broadcasts)
+* [Modify the Broadcast Messages](#Modify the Broadcast Messages)
+
+#### Limitations
+
+|Limitation |Business |Developer |
+|----------|----------|---------------|
+|Frequency limit | 10 times per app /min | once per app/min |
+|Daily usage | 30 at maximum | 10 at maximum |
+
+The limitation is calculated based on all the interfaces. LeanCloud will respond with error code 429 if exceeds the limitation until one minutes later. The interface will reboot after that. The request will not be proceeded if exceeded the daily usage amount. All the requests will be responded by error 429.
+
