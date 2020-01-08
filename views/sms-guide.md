@@ -133,7 +133,7 @@ Simply enter a name for yourself along with the content:
 <img src="images/sms_signature_edit.png" width="600" class="img-responsive" alt="在「短信签名」对话框中填入「名称」和「签名」。">
 #}
 
-After creating a signature, you will be able to call LeanCloud APIs to send text messages. We've seen at the beginning that there is a concept called "template". This is not required and we will [discuss this later](#templates).
+After creating a signature, you will be able to call LeanCloud APIs to send text messages. You might have noticed that there is a "template" appearing in the sample code, but since it is not required by all types of text messages, we will [discuss it later](#templates).
 
 ## Using SMS for Verification
 
