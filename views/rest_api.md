@@ -18,7 +18,7 @@ The current API version is `1.1`.
 
 This guide provides curl command line examples.
 You may need to modify some syntax if using cmd.exe on Windows.
-For example, `\` in curl examples means to be continued on next line, but cmd.exe will consider it as path seperator.
+For example, `\` in curl examples means to be continued on next line, but cmd.exe will consider it as path separator.
 Therefore, we recommend you to use [Postman] for testing on Windows.
 
 [Postman]: https://www.getpostman.com/
@@ -1098,3 +1098,410 @@ However, a pointer to a file is special:
 
 We may add more advanced data types in future, thus you should not use the `__type` on your own JSON objects.
 
+## Queries
+
+### Basic Queries
+
+To list objects in a class, just send a GET request to the class URL:
+
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -H "Content-Type: application/json" \
+  https://{{host}}/1.1/classes/Post
+```
+
+The response body is a JSON object containing a `results` key,
+whose value is an array of objects:
+
+```json
+{
+  "results": [
+    {
+      "content": "Most Internet-based applications are data-driven and share a very similar architecture...",
+      "pubUser": "LeanCloud",
+      "upvotes": 2,
+      "createdAt": "2015-06-29T03:43:35.931Z",
+      "objectId": "55a39634e4b0ed48f0c1845b"
+    },
+    {
+      "content": "LeanMessage is designed with the following goals:...",
+      "pubUser": "LeanCloud",
+      "pubTimestamp": 1435541999,
+      "createdAt": "2015-06-29T01:39:35.931Z",
+      "updatedAt": "2015-06-29T01:39:35.931Z",
+      "objectId": "558e20cbe4b060308e3eb36c"
+    }
+  ]
+}
+```
+
+### Query Constraints
+
+The `where` parameter applies query constraints.
+It should be encoded as JSON first, then URL encoded.
+
+The simplest form of `where` parameter is a key value pair (exact match).
+For example, to query posts published by LeanCloud:
+
+
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -H "Content-Type: application/json" \
+  -G \
+  --data-urlencode 'where={"pubUser":"LeanCloud"}' \
+  https://{{host}}/1.1/classes/Post
+```
+
+Other operators available in the `where` parameter:
+
+| Operator      | Description                           |
+| ------------- | ------------------------------------- |
+| `$ne`         | not equal to                          |
+| `$lt`         | less than                             |
+| `$lte`        | less than or equal to                 |
+| `$gt`         | greater than                          |
+| `$gte`        | greater than or equal to              |
+| `$regex`      | match a regular expression            |
+| `$in`         | contain                               |
+| `$nin`        | not contain                           |
+| `$all`        | contain all (for array type)          |
+| `$exists`     | the given key exists                  |
+| `$select`     | match the result of another query     |
+| `$dontSelect` | not match the result of another query |
+
+To query posts published on 2015-06-29 ：
+
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -H "Content-Type: application/json" \
+  -G \
+  --data-urlencode 'where={"createdAt":{"$gte":{"__type":"Date","iso":"2015-06-29T00:00:00.000Z"},"$lt":{"__type":"Date","iso":"2015-06-30T00:00:00.000Z"}}}' \
+  https://{{host}}/1.1/classes/Post
+```
+
+Posts whose votes is an odd number less than 10:
+
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -H "Content-Type: application/json" \
+  -G \
+  --data-urlencode 'where={"upvotes":{"$in":[1,3,5,7,9]}}' \
+  https://{{host}}/1.1/classes/Post
+```
+
+Posts *not* published by LeanCloud:
+
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -H "Content-Type: application/json" \
+  -G \
+  --data-urlencode 'where={"pubUser":{"$nin":["LeanCloud"]}}' \
+  https://{{host}}/1.1/classes/Post
+```
+
+Posts have been voted by someone:
+
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -H "Content-Type: application/json" \
+  -G \
+  --data-urlencode 'where={"upvotes":{"$exists":true}}' \
+  https://{{host}}/1.1/classes/Post
+```
+
+Posts have not been voted:
+
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -H "Content-Type: application/json" \
+  -G \
+  --data-urlencode 'where={"upvotes":{"$exists":false}}' \
+  https://{{host}}/1.1/classes/Post
+```
+
+Suppose we use `_Followee` and `_Follower` classes for following relationship, then we can query posts published by someone followed by current user like this:
+
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -H "Content-Type: application/json" \
+  -G \
+  --data-urlencode 'where={
+    "author": {
+      "$select": {
+        "query": {
+          "className":"_Followee",
+           "where": {
+             "user":{
+               "__type": "Pointer",
+               "className": "_User",
+               "objectId": "55a39634e4b0ed48f0c1845c"
+             }
+           }
+        },
+        "key":"followee"
+      }
+    }
+  }' \
+  https://{{host}}/1.1/classes/Post
+```
+
+Other parameters:
+
+Parameter | Description
+- | -
+order | order by, prefix `-` for descending
+limit | the number of returned objects, default 100, max 1000
+skip | for pagination
+keys | only return specified keys, prefix `-` for not including
+
+To query posts ordered by creation time:
+
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -G \
+  --data-urlencode 'order=createdAt' \ # ascending
+  https://{{host}}/1.1/classes/Post
+
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -G \
+  --data-urlencode 'order=-createdAt' \ # descending 
+  https://{{host}}/1.1/classes/Post
+```
+
+To sort results by multiple keys, use a comma to separate them:
+
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -G \
+  --data-urlencode 'order=createdAt,-pubUser' \
+  https://{{host}}/1.1/classes/Post
+```
+
+An example of pagination:
+
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -G \
+  --data-urlencode 'limit=200' \
+  --data-urlencode 'skip=400' \
+  https://{{host}}/1.1/classes/Post
+```
+
+If you only care about the content and author of posts:
+
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -G \
+  --data-urlencode 'keys=pubUser,content' \
+  https://{{host}}/1.1/classes/Post
+```
+
+Note that returned objects will always contain preserved attributes such as `objectId`, `createdAt`, and `updatedAt`.
+
+If you do not care about post author:
+
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -G \
+  --data-urlencode 'keys=-author' \
+  https://{{host}}/1.1/classes/Post
+```
+
+The parameters mentioned above can be combined with each other.
+
+### Regex Queries
+
+To query posts whose title begins with `WTO`:
+
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -H "Content-Type: application/json" \
+  -G \
+  --data-urlencode 'where={"title":{"$regex":"^WTO.*","$options":"i"}}' \
+  https://{{host}}/1.1/classes/Post
+```
+
+The above example specifies `i` in `options`.
+Thus it is a case-insensitive search.
+
+Available options (flags):
+
+Options | Description | Notes
+- | - | -
+`i` | case-insensitive search | same as in JavaScript 
+`m` | multi-line search | same as in JavaScript
+`s` | allow `.` to match newline characters | added in ES2018
+`x` | free-spacing and line comments | same as in Perl
+
+Options can be combined, for example `"$options":"sixm"`.
+
+### Array Queries
+
+Queries on keys with an array type overloads some operators mentioned above:
+
+Operators | Example | k is not an array | k is an array
+- | - | - | -
+n/a | `where={"k":2}` | `k == 2` | `k` contains 2
+`in` | `where={"k":{"$in":[2,3]}}` | `k` is 2 or 3 | `k` contains 2 or 3
+`all` | `where={"arrayKey":{"$all":[2,3]}}` | n/a | `k` contains 2 and 3
+
+### Pointer Queries
+
+To query a Pointer type attribute:
+
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -G \
+  --data-urlencode 'where={"post":{"__type":"Pointer","className":"Post","objectId":"558e20cbe4b060308e3eb36c"}}' \
+  https://{{host}}/1.1/classes/Comment
+```
+
+To query objects with pointers according to another query on the pointed object, you can use the `$inQuery` operator.
+
+For example, to query comments on posts with attached images:
+
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -G \
+  --data-urlencode 'where={"post":{"$inQuery":{"where":{"image":{"$exists":true}},"className":"Post"}}}' \
+  https://{{host}}/1.1/classes/Comment
+```
+
+Be aware that the `limit` parameter (default 100, max 1000) also applies to inner queries.
+Thus you may need to deliberately construct queries to get expected result.
+Refer to [Caveats about Inner Queries](leanstorage_guide-js.html#Caveats_about_Inner_Queries) for more details.
+
+To include pointed objects in one query, use `include` parameter.
+For example, to query most recent 10 comments with the posts commented on:
+
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -G \
+  --data-urlencode 'order=-createdAt' \
+  --data-urlencode 'limit=10' \
+  --data-urlencode 'include=post' \
+  https://{{host}}/1.1/classes/Comment
+```
+
+Without the `include` parameter, the post attribute of returned comments will look like this:
+
+```json
+{
+  "__type": "Pointer",
+  "className": "Post",
+  "objectId": "51e3a359e4b015ead4d95ddc"
+}
+```
+
+With the `include=post` parameter, the post attribute will be dereferenced:
+
+```json
+{
+  "__type": "Object",
+  "className": "Post",
+  "objectId": "51e3a359e4b015ead4d95ddc",
+  "createdAt": "2015-06-29T09:31:20.371Z",
+  "updatedAt": "2015-06-29T09:31:20.371Z",
+  "content": "this is a post",
+  "author": "LeanCloud"
+}
+```
+
+You can use dot (`.`) for multi-level dereference:
+
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -G \
+  --data-urlencode 'order=-createdAt' \
+  --data-urlencode 'limit=10' \
+  --data-urlencode 'include=post.author' \
+  https://{{host}}/1.1/classes/Comment
+```
+
+And you can use comma (`,`) to separate multiple pointers to `include`.
+
+### Counting Results
+
+You can pass `count=1` parameter to retrieve the count of matched results.
+For example, if you just need to know a specific user have posted how many posts:
+
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -G \
+  --data-urlencode 'where={"pubUser":"LeanCloud"}' \
+  --data-urlencode 'count=1' \
+  --data-urlencode 'limit=0' \
+  https://{{host}}/1.1/classes/Post
+```
+
+Since `limit=0`, LeanCloud will only return the count, and the results array will be empty.
+
+```json
+{
+  "results": [],
+  "count": 7
+}
+```
+
+Given a nonzero `limit` parameter, LeanCloud will also return results together with the count.
+
+### Compound Queries
+
+You can use `$or` operator to query objects matching any one of several queries.
+
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -G \
+  --data-urlencode 'where={"$or":[{"priority":{"$gt":2}},{"isComplete":true}]}' \
+  https://{{host}}/1.1/classes/Todo
+```
+
+Similarly, you can use `$and` operator to query objects matching all subqueries.
+
+```
+--data-urlencode 'where={"$and":[{"price": {"$ne":0}},{"price":{"$exists":true}}]}' \
+```
+
+Be aware that non-filtering constrains such as `limit`, `skip`, `order`, `include` are not allowed in subqueries of a compound query.

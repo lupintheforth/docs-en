@@ -3085,7 +3085,7 @@ query.whereKey("post.author.firstName", .selected)
 ```
 {% endif %}
 
-#### Caveats about Relational Queries
+#### Caveats about Inner Queries
 
 The backend of LeanCloud is not built on relational databases, which makes it impossible to join tables while querying. For the relational queries mentioned above, what LeanCloud would do is to first perform an inner query (with `100` as default `limit` and `1000` as maximum) and then insert the result from this query into the outer query. If the number of records matching the inner query exceeds the `limit` and the outer query contains other constraints, the amount of the records returned in the end could be zero or less than your expectation since only the records within the `limit` would be inserted into the outer query.
 
