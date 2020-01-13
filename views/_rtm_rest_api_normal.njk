@@ -193,7 +193,7 @@ If you used the [Rich Media format](./realtime_v2.html#Message), when sending me
 Parameters | Optionality | Description
 ---|---|---
 from_client | required | client Id of Sender
-message | requried | message content (The type of the cotent should be string, but we have no constraint on the inner format.<br/> Theoriotically, developer can send any format with size smaller than 5MB. )
+message | required | message content (The type of the content should be string, but we have no constraint on the inner format.<br/> Theoriotically, developer can send any format with size smaller than 5MB. )
 transient | optional | whether the message is transient, default on FALSE
 no_sync | optional | message will get synchronized to the online from_client users, ban this via setting it to TRUE.
 push_data | optional | set the offline push content of this message as attachment. If receiver is an iOS device and offline, we will push offline content according to this paramter. Refer to [offline push notification](./realtime-guide-intermediate.html#offline Push Notification)
@@ -223,18 +223,18 @@ curl -X GET \
 
 Parameters | Optionality | Description
 --- | --- | ---
-msgid | Optioanl | initial message id for query，**It is required to add timestamp as the startpoint of query**
-timestamp | Optioanl | timestamp at start of the query. Default on current time (on millisecond).
-till_msgid | Optioanl | final message id for query **It is required to add till_timestamp as the end of query**
-till_timestamp | Optioanl | timestamp at end of the query. Default on 0e (on millisecond).
-include_start | Optioanl | whether timestamp and msgid are included in start message, boolean, default on false.
-include_stop | Optioanl | whether till_timestamp and till_msgid are included in end message, boolean, default on false.
-reversed | Optioanl | return results on the reversed order (on descending time series by default), till_timestamp is the current timestamp, timestamp default on 0. Boolean. False by default.
-limit | Optioanl | number limit on return, default on 100, maximum 1000.
-client_id | Optioanl | viewer id（signature parameter）
-nonce | Optioanl | signature random string（signature parameter）
-signature_ts | Optioanl | signature timestamp（signature parameter），unit on milliseconnd
-signature | Optioanl | signature（signature parameter）
+msgid | Optional | initial message id for query，**It is required to add timestamp as the startpoint of query**
+timestamp | Optional | timestamp at start of the query. Default on current time (on millisecond).
+till_msgid | Optional | final message id for query **It is required to add till_timestamp as the end of query**
+till_timestamp | Optional | timestamp at end of the query. Default on 0e (on millisecond).
+include_start | Optional | whether timestamp and msgid are included in start message, boolean, default on false.
+include_stop | Optional | whether till_timestamp and till_msgid are included in end message, boolean, default on false.
+reversed | Optional | return results on the reversed order (on descending time series by default), till_timestamp is the current timestamp, timestamp default on 0. Boolean. False by default.
+limit | Optional | number limit on return, default on 100, maximum 1000.
+client_id | Optional | viewer id（signature parameter）
+nonce | Optional | signature random string（signature parameter）
+signature_ts | Optional | signature timestamp（signature parameter），unit on milliseconnd
+signature | Optional | signature（signature parameter）
 
 This interface has many time parameters. Here we get an instance for your reference. For instance, id1,id2,id3 and the timestamp t1,t2,t3 (t1 < t2 < t3), the different queried result are as follows (blank fields indicate default value):
 
@@ -256,7 +256,7 @@ return:
   {
     "timestamp": 1408008498571,
     "conv-id":   "219946ef32e40c515d33ae6975a5c593",
-    "data":      "Nice wheather today!",
+    "data":      "Nice weather today!",
     "from":      "u111872755_9d0461adf9c267ae263b3742c60fa",
     "msg-id":    "vdkGm4dtRNmhQ5gqUTFBiA",
     "is-conv":   true,
@@ -271,7 +271,7 @@ return:
 
 ### One-on-One Chatting/Group Chats-Modify the Messages
 
-This interface requries the master key.
+This interface requires the master key.
 From Objective-C SDK v6.0.0、Android SDK v4.4.0、JavaScript SDK v3.5.0 ，we support the new function of modification and recall. After modification and recall, the cached messages on client terminals will get altered. For the old version，only the messages on server will get altered but not the cached client messages.
 ```sh
 curl -X PUT \
@@ -296,3 +296,314 @@ return:
 Frequency limit:
 
 This interface has frequency limit, click [here](#Interface Requests Frequency limit) for details.
+
+### One-on-One Chatting/Group Chats - Recall the Messages
+
+This interface requries master key. It should be used in combination with matching SDK. See [Modify Messages](#Modify Messages) interface.
+
+```sh
+curl -X PUT \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  -H "Content-Type: application/json" \
+  -d '{"from_client": "", "timestamp": 123}' \
+  https://{{host}}/1.2/rtm/conversations/{conv_id}/messages/{message_id}/recall
+```
+
+Parameters | Optionality | Description
+---|---|---
+from_client | required | sender Client ID
+timestamp | required | timestamp of the message
+
+return:
+```
+{"result": {}}
+```
+
+Frequency limit:
+
+This interface has frequency limit, click [here](#Interface Requests Frequency limit) for details.
+
+### Delete Message 
+
+This interface requires master key.
+
+```sh
+curl -X DELETE \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  -G \
+  --data-urlencode 'from_client=some-client-id' \
+  --data-urlencode 'timestamp=123' \
+  https://{{host}}/1.2/rtm/conversations/{conv_id}/messages/{message_id}
+```
+
+> NOTE: this interface will delete the messages on the Server , it does no effect on the client terminal
+
+Parameters | Optionality | Description
+---|---|---
+from_client | required | sender client ID
+timestamp | requried | message timestamp
+
+return:
+```
+{}
+```
+
+### Add Temporary Prohibited user 
+
+This interface requires master key.
+```sh
+curl -X POST \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  -H "Content-Type: application/json" \
+  -d '{"client_id": "some-client-id", "ttl": 50}' \
+  https://{{host}}/1.2/rtm/conversations/{conv_id}/temporary-silenceds
+```
+
+Parameters | Description
+---|---
+client_id | prohibited Client ID, string
+ttl | prohibited time, seconds , 24h at maximum
+
+return
+
+```
+{}
+```
+
+### Remove Temporary prohibited user
+
+This interface requires master key.
+```sh
+curl -X DELETE \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  -G \
+  --data-urlencode 'client_id=some-client-id' \
+  https://{{host}}/1.2/rtm/conversations/{conv_id}/temporary-silenceds
+```
+
+return
+
+```
+{}
+```
+
+### Conversation Authority
+
+Refer to [Authority management and Block List](realtime-guide-senior.html#Authority management and block List)
+
+#### Add Authority
+
+This interface requires master key.
+Each conversation is permitted to add 500 permanent prohibited users.
+```sh
+curl -X POST \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  -H "Content-Type: application/json" \
+  -d '{"clientId": "client", "role": "role"}' \
+  https://{{host}}/1.2/rtm/conversations/{conv_id}/member-infos
+```
+
+Parameters | Description
+---|---
+clientId | user ID, string
+role | role, Enum[Member,Manager,Owner]
+
+return
+```
+{"updatedAt"=>"2018-01-16T03:40:37.683Z", "objectId"=>"5a5d7433c3422b31ed845e76"}
+```
+
+#### Delete Authority
+
+This interface requries master key.
+```sh
+curl -X DELETE \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  https://{{host}}/1.2/rtm/conversations/{conv_id}/member-infos/{info-id}
+```
+
+Parameters | Description
+---|---
+info-id | the matched objectId
+
+return
+```
+{}
+```
+
+#### Update Authority
+
+This interface requires master key
+```sh
+curl -X PUT \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  -H "Content-Type: application/json" \
+  -d '{"clientId": "client", "role": "role"}' \
+  https://{{host}}/1.2/rtm/conversations/{conv_id}/member-infos/{info-id}
+```
+
+Parameters | Description
+---|---
+clientId | user ID, string
+role | role , Enum[Member,Manager,Owner]
+info-id | the matched objectId 
+
+return
+```
+{"updatedAt"=>"2018-01-16T03:40:37.683Z", "objectId"=>"5a5d7433c3422b31ed845e76"}
+```
+
+#### Query Authority
+
+This interface requires master key.
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  -G \
+  --data-urlencode 'skip=1' \
+  --data-urlencode 'limit=20' \
+  https://{{host}}/1.2/rtm/conversations/{conv_id}/member-infos
+```
+
+Parameters | Description
+---|---
+skip |
+limit | together with skip to realize pagination
+role | the role included in the query
+
+返回
+```
+{"results": [{"clientId"=>"client1", "objectId"=>"5a5d7433c3422b31ed845e76", "role": "Manager"}]}
+```
+
+#### Add permanent prohibited user
+
+This interface requries master key.
+Each conversation is permitted to add 500 permanent prohibited users.
+```sh
+curl -X POST \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  -H "Content-Type: application/json" \
+  -d '{"client_ids": ["client1", "client2"]}' \
+  https://{{host}}/1.2/rtm/conversations/{conv_id}/permanent-silenceds
+```
+
+Parameters | Description
+--- | ---
+client_ids | the prohibited Client ID list , array
+
+return
+
+```
+{}
+```
+
+#### Remove permanent prohibited user
+
+This interface requires master key
+```sh
+curl -X DELETE \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  -d '{"client_ids": ["client1", "client2"]}' \
+  https://{{host}}/1.2/rtm/conversations/{conv_id}/permanent-silenceds
+```
+
+return
+
+```
+{}
+```
+
+#### Query the permanent prohibited List
+
+This interface requires master key
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  -G \
+  --data-urlencode 'limit=20' \
+  https://{{host}}/1.2/rtm/conversations/{conv_id}/permanent-silenceds
+```
+
+Parameters | Optionality | Description
+---|---|---
+limit | Optional | together with 
+next | Optional | 第一次查询时返回，后面的查询带着这个参数，实现分页查询
+
+return 
+
+```
+{"client_ids": ["client1", "client2"]}
+```
+
+### Blocked List
+
+Refer to [Blocked List](#Blocked List)
+
+#### Add users to conversation Blocked List 
+
+This interface requires master key
+
+The blocked user will get removed from the conversation and prohibited from joining in. Each conversation can have 500 blocked users at most.
+```sh
+curl -X POST \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  -H "Content-Type: application/json" \
+  -d '{"client_ids": ["client1", "client2"]}' \
+  https://{{host}}/1.2/rtm/conversations/{conv_id}/blacklists
+```
+
+Parameters | Description
+--- | ---
+client_ids | blocked Client ID list, array
+
+return
+
+```
+{}
+```
+
+#### Query the Blocked List
+
+This interface requires master key.
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  -d '{"client_ids": ["client1", "client2"]}' \
+  https://{{host}}/1.2/rtm/conversations/{conv_id}/blacklists
+```
+
+Parameters | Optionality | Description
+---|---|---
+limit | Optional | together with next to realize pagination , default on 10
+next | Optional | together with limit to realize pagination.
+
+return
+
+```
+{"client_ids": ["client1", "client2"]}
+```
+
+
+
+
+
+
+
+
+
+
+
