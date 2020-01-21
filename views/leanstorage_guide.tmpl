@@ -6495,11 +6495,9 @@ var authData = {
   // Required
   uid:           'UID',
   access_token:  'ACCESS_TOKEN',
-  expires_in:    7200,
 
   // Optional
-  refresh_token: 'REFRESH_TOKEN',
-  scope:         'SCOPE'
+  extra_key: 'content'
 };
 AV.User.loginWithAuthData(authData, 'github').then(function (user) {
   // Logged in successfully
@@ -6541,9 +6539,9 @@ let authData: [String: Any] = [
     // Required
     "uid":           "UID",
     "access_token":  "ACCESS_TOKEN",
-    "expires_in":    7200,
 
     // Optional
+    "expires_in":    7200,
     "refresh_token": "REFRESH_TOKEN",
     "scope":         "SCOPE"
 ]
@@ -6601,7 +6599,7 @@ A user who has GitHub linked may have the following object as `authData`:
 }
 ```
 
-LeanCloud automatically validates the access tokens for certain services to prevent data forge attack. When the validation fails, LeanCloud will respond with `invalid authData` error and the linking will not be established. For services that are not recognized by LeanCloud, you are responsible for validating access tokens by yourself. You can turn off the **Validate access tokens when logging in with third-party accounts** option in your app's [Dashboard > LeanStorage > Settings](https://console.leancloud.app/storage.html?appid={{appid}}#/storage/conf) if you prefer not to have LeanCloud validate access tokens for you.
+LeanCloud automatically validates the access tokens for certain services to prevent data forge attack. When the validation fails, LeanCloud will respond with `invalid authData` error and the linking will not be established. For services that are not recognized by LeanCloud, you are responsible for [validating access tokens by yourself](leanengine_cloudfunction_guide-node.html#onLogin). You can turn off the **Validate access tokens when logging in with third-party accounts** option in your app's [Dashboard > LeanStorage > Settings](https://console.leancloud.app/storage.html?appid={{appid}}#/storage/conf) if you prefer not to have LeanCloud validate access tokens for you.
 
 {% if platform_name === "Objective-C" or platform_name === "JavaScript" or platform_name === "Swift" %}
 {# #### 扩展需求 #}

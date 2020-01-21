@@ -1267,6 +1267,93 @@ public static AVUser userOnLoginHook(AVUser user) throws Exception {
 ```
 {% endif %}
 
+You can also verify `access_token` of a third party account using this hook.
+
+Suppose there is a platform called *Example* with the following `authData`:
+
+```json
+{
+    "uid": "42",
+    "access_token": "access token string",
+}
+```
+
+and the platform name is `example_platform`. We can verify its `access_token` using the method below:
+
+{% if platformName === "Node.js" %}
+```js
+AV.Cloud.onLogin(function (request) {
+  const authData = request.object.get("authData");
+  const userID = authData.example_platform.uid;
+  const token = authData.example_platform.access_token;
+
+  https.get(`https://example.com/applications/${userID}/tokens/${token}`, (res) => {
+    if (res.statusCode !== 200) {
+      throw new AV.Cloud.Error('Example platform token invalid');
+    }
+  }).on('error', (e) => {
+    console.error(e);
+    throw new AV.Cloud.Error('Failed to verify Example platform token'); 
+  });
+});
+```
+{% endif %}
+{% if platformName === "Python" %}
+```python
+@engine.on_login
+def on_login(user):
+  auth_data = user.get("authData")
+  user_id = auth_data["example_platform"]["uid"]
+  token = auth_data["example_platform"]["access_token"]
+
+  conn = http.client.HTTPSConnection("example.com")
+  conn.request("GET", f"/applications/{user_id}/tokens/{token}")
+  response = conn.getresponse()
+  if response.status != 200:
+    raise LeanEngineError("Example platform token invalid")
+```
+{% endif %}
+{% if platformName === "PHP" %}
+```php
+Cloud::onLogin(function($user) {
+  $authData = $user->get("authData");
+  $userID = $authData["example_platform"]["uid"];
+  $token = $authData["example_platform"]["access_token"];
+
+  $headers = get_headers("https://example.com/applications/${userID}/tokens/${token}");
+  $statusCode = $header[0];
+  if (strpos($statusCode, "200") === false) {
+    throw new FunctionError("Example platform token invalid");
+  }
+});
+```
+{% endif %}
+{% if platformName === "Java" %}
+```java
+@EngineHook(className = "_User", type = EngineHookType.onLogin)
+public static AVUser userOnLoginHook(AVUser user) throws Exception {
+  JSONObject authData = user.getJSONObject("authData");
+  JSONObject examplePlatform = (JSONObject) authData.get("example_platform");
+  String userID = (String) examplePlatform.get("uid");
+  String token = (String) examplePlatform.get("access_token");
+  OkHttpClient client = new OkHttpClient();
+  String url = "https://example.com/applications/" + userID + "/tokens/" + token;
+  Request request = new Request.Builder().url(url).build();
+  Response response = client.newCall(request).execute();
+  int statusCode = response.code();
+  if (statusCode == 200) {
+    return user;
+  } else {
+    throw new Exception("Example platform token invalid");
+  }
+}
+```
+{% endif %}
+
+Be aware that the code above is for demonstration only.
+We omitted a lot of logic for brevity,
+such as verifying token's expiration date, handling user login in other ways, and recovering from network errors.
+
 ### Hooks for LeanMessage
 
 See [LeanMessage Overview > LeanEngine Hooks](rtm-overview.html#leanengine-hooks) for more instructions on the methods introduced below.

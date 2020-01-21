@@ -1458,6 +1458,85 @@ curl -X GET \
 
 And you can use comma (`,`) to separate multiple pointers to `include`.
 
+### GeoPoint Queries
+
+We have briefly described GeoPoint in the [Advanced Data Types](#Advanced_Data_Types) section above.
+
+Currently there are one limit on GeoPoints: every class can only contain one GeoPoint attribute.
+Also, be aware that the range of `latitude` is `[-90.0, 90.0]`, and the range of `longitude` is `[-180.0, 180.0]`.
+
+To query near objects, you can use the `$nearSphere` operator.
+
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -G \
+  --data-urlencode 'limit=10' \
+  --data-urlencode 'where={
+        "location": {
+          "$nearSphere": {
+            "__type": "GeoPoint",
+            "latitude": 39.9,
+            "longitude": 116.4
+          }
+        }
+      }' \
+  https://{{host}}/1.1/classes/Post
+```
+
+Returned results will be ordered by distance.
+The first result is the post published at the nearest location.
+This order can be overwritten by the `order` parameter.  
+
+To limit the maximum distance, you can use `$maxDistanceInMiles`, `$maxDistanceInKilometers`, or `$maxDistanceInRadians`.
+
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -G \
+  --data-urlencode 'where={
+        "location": {
+          "$nearSphere": {
+            "__type": "GeoPoint",
+            "latitude": 39.9,
+            "longitude": 116.4
+          },
+          "$maxDistanceInMiles": 10.0
+        }
+      }' \
+  https://{{host}}/1.1/classes/Post
+```
+
+To query for objects within a rectangular area:
+
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -G \
+  --data-urlencode 'where={
+        "location": {
+          "$within": {
+            "$box": [
+              { // southwestGeoPoint
+                "__type": "GeoPoint",
+                "latitude": 39.97,
+                "longitude": 116.33
+              },
+              { // northeastGeoPoint
+                "__type": "GeoPoint",
+                "latitude": 39.99,
+                "longitude": 116.37
+              }
+            ]
+          }
+        }
+      }' \
+  https://{{host}}/1.1/classes/Post
+```
+
 ### Counting Results
 
 You can pass `count=1` parameter to retrieve the count of matched results.
@@ -1505,3 +1584,800 @@ Similarly, you can use `$and` operator to query objects matching all subqueries.
 ```
 
 Be aware that non-filtering constrains such as `limit`, `skip`, `order`, `include` are not allowed in subqueries of a compound query.
+
+## Users
+
+With users API, you can build an account system for your application quickly and conveniently.
+
+Basically, users (the `_User` class) are similar to other classes, for example, `_User` is also schema free.
+However, all user objects must have `username` and `password` attributes. `password` will be encrypted automatically.
+`username` and `email` (if available) attributes must be unique (case sensitive).
+
+### Signing Up
+
+To create a new user:
+
+```sh
+curl -X POST \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"hjiang","password":"f32@ds*@&dsa","region": "China"}' \
+  https://{{host}}/1.1/users
+```
+
+As mentioned above, `username` and `password` are required,
+and `password` will be stored in encrypted form and LeanCloud will never return its value to client side.
+
+You may add any extra custom attributes.
+`region` in the above is just an example.
+
+If the registration succeed, LeanCloud will return `201 Created` and the `Location` will contain the URL for that user:
+
+```sh
+Status: 201 Created
+Location: https://{{host}}/1.1/users/55a47496e4b05001a7732c5f
+```
+
+The response body is a JSON object containing three attributes:
+
+```json
+{
+  "sessionToken":"qmdj8pdidnmyzp0c7yqil91oc",
+  "createdAt":"2015-07-14T02:31:50.100Z",
+  "objectId":"55a47496e4b05001a7732c5f"
+}
+```
+
+`sessionToken` can be used to authenticate subsequent requests as that user.
+It never changes, unless:
+
+- the user forgets the password and resets it via email;
+- the user modifies the password, and the developer enabled "Log out the user when password is updated" in dashboard;
+- the `refreshSessionToken` api is invoked.
+
+Logged in users will encounter a `403 Forbidden` permission error when invoking related APIs after the `sessionToken` refreshed.
+
+LeanCloud can verify user's email address automatically.
+To enable this feature, access "Dashboard > LeanStorage > User > Setting", and select "Send verification emails when users register or change email addresses from clients".
+
+The `emailVerified` of `_User` will be set to `true` once the new user clicked the verification link in the email.
+
+You can also enable "Do not allow users with unverified phone numbers to log in" in the dashboard.
+
+### Logging In
+
+To log in a user with username and password:
+
+```sh
+curl -X POST \
+-H "Content-Type: application/json" \
+-H "X-LC-Id: {{appid}}" \
+-H "X-LC-Key: {{appkey}}" \
+-d '{"username":"hjiang","password":"f32@ds*@&dsa"}' \
+https://{{host}}/1.1/login
+```
+
+The response body is a JSON object containing all the attributes of that user, except `password`:
+
+```json
+{
+  "sessionToken":"qmdj8pdidnmyzp0c7yqil91oc",
+  "updatedAt":"2015-07-14T02:31:50.100Z",
+  "phone":"18612340000",
+  "objectId":"55a47496e4b05001a7732c5f",
+  "username":"hjiang",
+  "createdAt":"2015-07-14T02:31:50.100Z",
+  "emailVerified":false,
+  "mobilePhoneVerified":false
+}
+```
+
+To log in a user with email and password, just replace `username` with `email`:
+
+```json
+{"email":"hjiang@example.com","password":"f32@ds*@&dsa"}
+```
+
+### Refresh sessionToken
+
+To refresh a user's `sessionToken`:
+
+```sh
+curl -X PUT \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -H "X-LC-Session: qmdj8pdidnmyzp0c7yqil91oc" \
+  https://{{host}}/1.1/users/57e3bcca67f35600577c3063/refreshSessionToken
+```
+
+`X-LC-Session` can be omitted when using Master Key.
+
+If succeed, new `sessionToken` will be returned, with user information:
+
+```json
+{
+ "sessionToken":"5frlikqlwzx1nh3wzsdtfr4q7",
+ "updatedAt":"2016-10-20T03:10:57.926Z",
+ "objectId":"57e3bcca67f35600577c3063",
+ "username":"leancloud",
+ "createdAt":"2016-09-22T11:13:14.842Z",
+ "emailVerified":false,
+ "mobilePhoneVerified":false
+}
+```
+
+#### Locking Users
+
+Seven consecutive failed login attempts for a user within 15 minutes will trigger a lock.
+After that LeanCloud will return the following error:
+
+```json
+{
+  "code":219,
+  "error":"Tried too many times to signin."
+}
+```
+
+LeanCloud will release this lock automatically in 15 minutes after last login failure.
+Developers cannot adjust this behavior via SDK or REST API.
+During the locking period, the user is not allowed to login,
+even if they provide correct password.
+This restriction also applies to SDK and LeanEngine.
+
+{# TODO
+### 使用手机号码注册或登录
+
+请参考 [短信服务 REST API 详解 &middot; 使用手机号码注册或登录](rest_sms_api.html#使用手机号码注册或登录)。
+#}
+
+### Verifying Email Address
+
+As mentioned above, once a user clicked the verification link in the email, their `emailVerified` will be set to `true`.
+
+`emailVerified` is a Boolean:
+
+1. `true`: the user has verified their email address via clicking the link in the verification mail.
+2. `false`: when a user's `email` attribute is set or modified, LeanCloud will set their `emailVerified` to `false` and send a verification email to the user. After the user clicks the verification link in the email, LeanCloud will set `emailVerified` to `true`. 
+3. `null`: The user does not have an `email`, or the user object is created when the verifying new user's email address option is disabled. 
+
+{# TODO 关于自定义邮件模板和验证链接 https://github.com/leancloud/docs/pull/3408 #}
+
+The verification link expires in one week.
+To resend the verification email:
+
+```sh
+curl -X POST \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"hang@leancloud.rocks"}' \
+  https://{{host}}/1.1/requestEmailVerify
+```
+
+### Resetting a Password
+
+A user can reset their password via email:
+
+```sh
+curl -X POST \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"hang@leancloud.rocks"}' \
+  https://{{host}}/1.1/requestPasswordReset
+```
+
+If succeed, the response body will be an empty JSON object:
+
+```json
+{}
+```
+
+{# TODO 关于自定义邮件模板和验证链接 https://github.com/leancloud/docs/pull/3408 #}
+
+{# TODO
+### 手机号码验证
+
+请参考 [短信服务 REST API 详解 - 用户账户与手机号码验证](rest_sms_api.html#用户账户与手机号码验证)。
+#}
+
+### Retrieving Users
+
+To retrieve a user, you can send a GET request to the user URL (as in the `Location` header returned on [successful signing up](#Signing_Up)).
+
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  https://{{host}}/1.1/users/55a47496e4b05001a7732c5f
+```
+
+Alternatively, you can retrieve a user via their `sessionToken`:
+
+```
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -H "X-LC-Session: qmdj8pdidnmyzp0c7yqil91oc" \
+  https://{{host}}/1.1/users/me
+```
+
+The returned JSON object is the same as in [`/login`](#Logging_In).
+
+If the user does not exist, a `400 Bad Request` will be returned:
+
+```json
+{
+  "code": 211,
+  "error": "Could not find user."
+}
+```
+
+### Updating Users
+
+Similar to [Updating Objects](#Updating_Objects), you can send a `PUT` request to the user URL to update a user's data.
+
+```sh
+curl -X PUT \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -H "X-LC-Session: qmdj8pdidnmyzp0c7yqil91oc" \
+  -H "Content-Type: application/json" \
+  -d '{"phone":"18600001234"}' \
+  https://{{host}}/1.1/users/55a47496e4b05001a7732c5f
+```
+
+The `X-LC-Session` HTTP header is to authenticate the modification,
+whose value is the user's `sessionToken`.
+
+If succeed, `updatedAt` will be returned.
+This is the same as [Updating Objects](#Updating_Objects).
+
+If you want to update `username`, then you have to ensure that the new value of `username` must not be conflict with other existing users.
+
+If you want to update `password` after verifying the old password,
+then you can use `PUT /1.1/users/:objectId/updatePassword` instead.
+
+```sh
+curl -X PUT \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -H "X-LC-Session: qmdj8pdidnmyzp0c7yqil91oc" \
+  -H "Content-Type: application/json" \
+  -d '{"old_password":"the_old_password", "new_password":"the_new_password"}' \
+  https://{{host}}/1.1/users/55a47496e4b05001a7732c5f/updatePassword
+```
+
+Note this API still requires the `X-LC-Session` header.
+
+### Querying Users
+
+You can query users like [querying regular objects](#Queries), just send `GET` requests to `/1.1/users`.
+
+However, for security concerns, all queries on users will be rejected by LeanCloud, unless you use master key or have properly configured the `_User` class's ACL settings (in Dashboard > LeanStorage > _User > Permission).
+
+### Deleting Users
+
+Just like delete an object, send a `DELETE` request to delete a user.
+
+```sh
+curl -X DELETE \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -H "X-LC-Session: qmdj8pdidnmyzp0c7yqil91oc" \
+  https://{{host}}/1.1/users/55a47496e4b05001a7732c5f
+```
+
+The `X-LC-Session` HTTP header is used for authenticate this request.
+
+### Linking Users
+
+To support users to use third party accounts to log in your application, you can use the `authData` attribute of user.
+
+`authData` is a JSON object, whose schema may be different for different services.
+
+The simplest form of `authData` is as following:
+
+```json
+{
+  "anonymous": {
+    "id": "random UUID with lowercase hexadecimal digits"
+    // other optional keys 
+  }
+}
+```
+
+This is used for anonymous users,
+for example, to provide a "try it before signing up" or "guest login" feature for your application.
+
+The `authData` for an arbitrary platform:
+
+```json
+{
+    "platform_name":
+    {
+      "uid": "unique user id on that platform (string)",
+      "access_token": "access token for the user"
+      // other optional keys 
+    }
+}
+```
+
+`authData` can have other additional keys, but it must contain both `uid` and `access_token`.
+Often you need to verify `authData` yourself (except for certain platforms, see below).
+Also, to avoid binding a third party account to multiple users, you need to create a unique index for `authData.platform_name.uid` in Dashboard (LeanStorage > `_User`).
+
+LeanCloud has built-in support for some popular social networks in China, such as [Weibo](http://weibo.com/), [WeChat](https://www.wechat.com/en) (*weixin* in Chinese pinyin), and [QQ](https://imqq.com/English1033.html):
+
+```json
+{
+  "authData": {
+    "weibo": {
+      "uid": "123456789",
+      "access_token": "2.00vs3XtCI5FevCff4981adb5jj1lXE",
+      "expiration_in": "36000"
+    }
+  }
+}
+
+{
+  "authData": {
+    "weixin": {
+      "openid": "0395BA18A5CD6255E5BA185E7BEBA242",
+      "access_token": "12345678-SaMpLeTuo3m2avZxh5cjJmIrAfx4ZYyamdofM7IjU",
+      "expires_in": 1382686496
+    }
+  }
+}
+
+{
+  "authData": {
+    "qq": {
+      "openid": "0395BA18A5CD6255E5BA185E7BEBA242",
+      "access_token": "12345678-SaMpLeTuo3m2avZxh5cjJmIrAfx4ZYyamdofM7IjU",
+      "expires_in": 1382686496
+    }
+  }
+}
+```
+
+LeanCloud will automatically verify access token for these platforms, and will also create unique index for these platforms.
+
+In Weibo, WeChat, and QQ, a user's `openid` will be different for different applications.
+If you have multiple applications, you may want to link them across all your applications.
+To fulfill this requirement, you can utilize the UnionID function offered by Weibo, WeChat, and QQ.
+For details, see the [UnionID](#UnionID) section below.
+
+#### Third-Party Signing Up and Login
+
+To sign up or log in via a third party account, you also send a POST request with the `authData`.
+For example, to use a QQ account to login:
+
+```sh
+curl -X POST \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -H "Content-Type: application/json" \
+  -d '{
+     "authData": {
+       "qq": {
+         "openid": "0395BA18A5CD6255E5BA185E7BEBA242",
+         "access_token": "12345678-SaMpLeTuo3m2avZxh5cjJmIrAfx4ZYyamdofM7IjU",
+         "expires_in": 1382686496
+         }
+    }
+    }' \
+  https://{{host}}/1.1/users
+```
+
+As mentioned above, LeanCloud will verify `access_token` for QQ accounts.
+If the verification succeed, LeanCloud will return `200 OK` or `201 Created` depending on if there is an existing user linking this QQ account.
+In both cases the user URL will also be returned in the `Location` HTTP header.
+
+The response body will be a JSON object, whose content is similar to the one returned when creating or logging in a regular user.
+For new users, LeanCloud will automatically assign a random username, e.g. `ec9m07bo32cko6soqtvn6bko5`.
+
+#### UnionID
+
+As mentioned above, we can utilize the UnionID mechanism offered by Weibo, WeChat, and QQ to link users across multiple applications.
+
+To do so, you need to use a specific schema of `authData`, with the following keys:
+
+- `unionid`: the user's UnionID;
+- `main_account`: `true`, indicating we will use UnionID;
+- `plat_form`: `weibo`, `weixn`, or `qq`.
+
+Let's look at an example of WeChat UnionID.
+
+Suppose you have a WeChat mini program named `foo`.
+Then to sign up or log in a user with UnionID:
+
+```sh
+curl -X POST \
+  -H "X-LC-Id: zbOycL3cTIr3gOTgFAyQYiop-gzGzoHsz" \
+  -H "X-LC-Key: pp4T5TmSR8mscQONix0xFXpT" \
+  -H "Content-Type: application/json" \
+  -d '{
+     "authData": {
+       "foo": {
+         "openid": "oTY851cqL0gk3DqW3xINqG1Q4PTc",
+         "access_token": "12_b6mz7ujXbTY4vpbqCRaKVa_y0Ij3N9grCeVtM8VJT8KFd4qnQ9lXtBsZVxG6x9c9Nay_oNgvbKK7KYKbn8R2P7uEgA0EhsXMHmxkx-xU-Tk",
+         "expires_in": 7200,
+         "refresh_token": "12_71UYUnqHDuIfekimsJsYjBDfY67ilo30fDqrYkqlwZtxNgcBhMmQgDVhT6mJWkRg0mngvX9kXeCGP8kmBWdvUtc5ngRiN5LDTWAau4du838",
+         "scope": "snsapi_userinfo",
+         "unionid": "ox7NLs-e-32ZyHg2URi_F2iPEI2U",
+         "platform": "weixin",
+         "main_account":"true"
+        }
+      }
+    }' \
+   https://{{host}}/1.1/users
+```
+
+And to sign up or log in a user for your another WeChat mini program `bar`:
+
+```sh
+curl -X POST \
+  -H "X-LC-Id: zbOycL3cTIr3gOTgFAyQYiop-gzGzoHsz" \
+  -H "X-LC-Key: pp4T5TmSR8mscQONix0xFXpT" \
+  -H "Content-Type: application/json" \
+  -d '{
+     "authData": {
+       "bar": {
+         "openid": "ohxoK3ldpsGDGGSaniEEexxx",
+         "access_token": "10_QfDeXVp8fUKMBYC_d4PKujpuLo3sBV_pxxxxIZivS77JojQPLrZ7OgP9PC9ZvFCXxIa9G6BcBn45wSBebsv9Pih7Xdr4-hzr5hYpUoSA",
+    "unionid": "ox7NLs06ZGfdxxxxxe0F1po78qE",
+         "expires_in": 7200,
+         "refresh_token": "10_RZXedP8Ia9G6B_Xxoxjxpu1o4DBV_hzr5hYpUoSAd87JojQPLrZ7OgP10e9ZvFCXxcon54wSfaero_CBebsd20h5ddr3-4PKuIZivS",
+         "scope": "snsapi_userinfo",
+         "unionid": "ox7NLs-e-32ZyHg2URi_F2iPEI2U",
+         "platform": "weixin",
+         "main_account":"true"
+        }
+      }
+    }' \
+   https://{{host}}/1.1/users
+```
+
+Note that `openid` is different but `unionid` is the same.
+
+And the `authData` stored on LeanCloud will be something like:
+
+```json
+{
+  "foo": {
+    // ...
+  },
+  "_weixin_unionid": {
+    "uid": "ox7NLs-e-32ZyHg2URi_F2iPEI2U"
+  },
+  "bar": {
+    // ...
+  }
+}
+```
+
+The `_weixin_unionid` key is automatically created by LeanCloud.
+
+#### Linking a Third Party Account
+
+To link a third party account to an existing user,
+just update this user's `authData` attribute.
+
+```sh
+curl -X PUT \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -H "X-LC-Session: qmdj8pdidnmyzp0c7yqil91oc" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "authData": {
+          "weixin": {
+            "uid": "123456789",
+            "access_token": "2.00vs3XtCI5FevCff4981adb5jj1lXE",
+            "expiration_in": "36000"
+            // ...
+          }
+        }
+      }' \
+  https://{{host}}/1.1/users/55a47496e4b05001a7732c5f
+```
+
+This user can be authenticated via matching `authData` afterwards.
+
+#### Unlinking a Third Party Account
+
+Similarly, to unlink a user from a third party account,
+just delete the platform in their `authData` attribute.
+
+```sh
+curl -X PUT \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -H "X-LC-Session: 6fehqhr2t2na5mv1aq2om7jgz" \
+  -H "Content-Type: application/json" \
+  -d '{"authData.weixin":{"__op":"Delete"}}' \
+  https://{{host}}/1.1/users/5b7e53a767f356005fb374f6
+```
+
+## Roles
+
+Role is an abstraction to control data access based on ACL.
+Roles are objects containing users and other roles.
+For example, moderators and administrators are common roles in application.
+
+LeanCloud has a preserved class `_Role` for roles.
+Roles have some specific attributes:
+
+- `name`: Required. The name of the role, which can only be set on creation. The name can only contain alphanumeric characters, spaces, dashes, and underscores.
+- `users`: A relation to a set of users.
+- `roles`: A relation to a set of child roles.
+
+For security concerns, roles are typically created and managed manually or via a separate management interface, not directly in your applications.
+
+### Creating Roles
+
+Creating a role is similar to creating an object, except that you must specify the `name` and `ACL` attributes. To prevent allowing wrong users to modify a role accidentally, you should set a restrictive and rigid `ACL`.
+
+```sh
+curl -X POST \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "name": "Manager",
+        "ACL": {
+          "*": {
+            "read": true
+          }
+        }
+      }' \
+  https://{{host}}/1.1/roles
+```
+
+The response is the same as creating an object.
+
+To create a role with existing child roles and users:
+
+```sh
+curl -X POST \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "name": "CLevel",
+        "ACL": {
+          "*": {
+            "read": true
+          }
+        },
+        "roles": {
+          "__op": "AddRelation",
+          "objects": [
+            {
+              "__type": "Pointer",
+              "className": "_Role",
+              "objectId": "55a48351e4b05001a774a89f"
+            }
+          ]
+        },
+        "users": {
+          "__op": "AddRelation",
+          "objects": [
+            {
+              "__type": "Pointer",
+              "className": "_User",
+              "objectId": "55a47496e4b05001a7732c5f"
+            }
+          ]
+        }
+      }' \
+  https://{{host}}/1.1/roles
+```
+
+You may noticed that there is a new operator `AddRelation` we have not seen before.
+This operator adds a relation to an object.
+The actual implementation of relation is quite complex for performance issues.
+But conceptually you can consider them as arrays of pointers, and they are only used in roles.
+
+### Retrieving Roles
+
+Retrieving a role is similar to retrieving an object:
+
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  https://{{host}}/1.1/roles/55a483f0e4b05001a774b837
+```
+
+The response body will be a JSON object:
+
+```json
+{
+  "name":"CLevel",
+  "createdAt":"2015-07-14T03:37:20.992Z",
+  "updatedAt":"2015-07-14T03:37:20.994Z",
+  "objectId":"55a483f0e4b05001a774b837",
+  "users":{
+    "__type":"Relation",
+    "className":"_User"
+  },
+  "roles":{
+    "__type":"Relation",
+    "className":"_Role"
+  }
+}
+```
+
+To query for the specific users and roles in a role, you need to send another query using the `$relatedTo` operator:
+
+```sh
+where={
+  "$relatedTo":{
+    "object":{
+      "__type":"Pointer",
+      "className":"_Role",
+      "objectId":"objectId of a role"
+  },
+  "key":"users"}
+}
+```
+
+### Updating Roles
+
+Updating roles are similar to update objects, except that `name` cannot be modified, as mentioned above.
+To add or remove users and child roles, you can use `AddRelation` and `RemoveRelation` operators.
+
+Suppose we have a `Manager` role with objectId `55a48351e4b05001a774a89f`, we can add a user to it as below:
+
+```sh
+curl -X PUT \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "users": {
+          "__op": "AddRelation",
+          "objects": [
+            {
+              "__type": "Pointer",
+              "className": "_User",
+              "objectId": "55a4800fe4b05001a7745c41"
+            }
+          ]
+        }
+      }' \
+  https://{{host}}/1.1/roles/55a48351e4b05001a774a89f
+```
+
+Similarly, to remove a child role:
+
+```sh
+curl -X PUT \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "roles": {
+          "__op": "RemoveRelation",
+          "objects": [
+            {
+              "__type": "Pointer",
+              "className": "_Role",
+              "objectId": "55a483f0e4b05001a774b837"
+            }
+          ]
+        }
+      }' \
+  https://{{host}}/1.1/roles/55a48351e4b05001a774a89f
+```
+
+### Deleting Roles
+
+Deleting roles are similar to delete objects.
+It is authenticated with the `X-LC-Session` HTTP header.
+The session token passed in must belong to a user who has the permission to delete the specified role.
+
+```sh
+curl -X DELETE \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -H "X-LC-Session: qmdj8pdidnmyzp0c7yqil91oc" \
+  https://{{host}}/1.1/roles/55a483f0e4b05001a774b837
+```
+
+### Roles and ACL
+
+As demonstrated above, accessing LeanCloud data via REST API is also restricted by ACL, just as SDKs.
+
+Roles make maintaining ACL easier.
+For example, to set an ACL of an object with the following permissions:
+
+- It can be read by `Staff`s.
+- It can only be write by `Manager`s and its creator.
+
+```json
+{
+  "55a4800fe4b05001a7745c41": {
+    "write": true
+  },
+  "role:Staff": {
+    "read": true
+  },
+  "role:Manager": {
+    "write": true
+  }
+}
+```
+
+The creator belongs to the `Staff` role, and the `Manager` role is a child role of the `Staff` role.
+Therefore, since they will inherit read permissions, we did not grant them the read permission manually.
+
+Let's look at anther example of permission inherence among roles.
+In UGC applications such as forums, `Administrators` typically have all the permissions of `Moderators`.
+Thus `Administrators` should be a child role of `Moderators`.
+
+```sh
+curl -X PUT \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "roles": {
+          "__op": "AddRelation",
+          "objects": [
+            {
+              "__type": "Pointer",
+              "className": "_Role",
+              "objectId": "<AdministratorsRoleObjectId>"
+            }
+          ]
+        }
+      }' \
+  https://{{host}}/1.1/roles/<ModeratorsRoleObjectId>
+```
+
+## Schema
+
+You can use REST API to fetch data schema of your application.
+For security concerns, master key is required to fetch data schema.
+
+To fetch the schema of all classes:
+
+```sh
+curl -X GET \
+   -H "X-LC-Id: {{appid}}" \
+   -H "X-LC-Key: {{masterkey}},master" \
+   https://{{host}}/1.1/schemas
+```
+
+Result:
+
+```json
+{
+  "_User":{
+    "username"     : {"type":"String"},
+    "password"     : {"type":"String"},
+    "objectId"     : {"type":"String"},
+    "emailVerified": {"type":"Boolean"},
+    "email"        : {"type":"String"},
+    "createdAt"    : {"type":"Date"},
+    "updatedAt"    : {"type":"Date"},
+    "authData"     : {"type":"Object"}
+  }
+  // other classes
+}
+```
+
+You can also fetch a single class's schema:
+
+```sh
+curl -X GET \
+   -H "X-LC-Id: {{appid}}" \
+   -H "X-LC-Key: {{masterkey}},master" \
+   https://{{host}}/1.1/schemas/_User
+```
+
+Data schema can be used with tools such as code generation, and internal management interface.
