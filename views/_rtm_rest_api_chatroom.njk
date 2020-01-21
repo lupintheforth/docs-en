@@ -1,83 +1,77 @@
-## One-on-One Chatting/Group Chats
+## Chats Rooms
 
-### Create Conversation
+### Create Chats Rooms
 
-In table `_Conversation`, the default ACL authority requires master key to create.
+In `_Conversation` table , the default ACL authority requires master key to create.
 
 ```sh
 curl -X POST \
   -H "X-LC-Id: {{appid}}" \
   -H "X-LC-Key: {{masterkey}},master" \
   -H "Content-Type: application/json" \
-  -d '{"name":"My First Conversation", "m": ["BillGates", "SteveJobs"], "unique": true}' \
-  https://{{host}}/1.2/rtm/conversations
+  -d '{"name":"My First Chatroom"}' \
+  https://{{host}}/1.2/rtm/chatrooms
 ```
-
-The above instance will create an elementary conversation, including two initial participants having client ID 'BillGates' and 'SteveJobs'. A success creation will return the objectId. Namely , the rtm message ID. The client terminal can send message with this code. The created conversations can be queried from table `_Conversation`. Strings in conversations can refer to the [Conversation](realtime_v2.html#Conversation) in Realtime Message - guide. Inputting `"unique": true` will ensure the uniqueness of the conversation.
+The fields in the request are specified in [Conversation](realtime.html#Conversation).
 
 return
 ```
 {"objectId"=>"5a5d7432c3422b31ed845e75", "createdAt"=>"2018-01-16T03:40:32.814Z"}
 ```
 
-The only distinction between One-on-One Chatting and Group Chats is the number of the clients. The two share the same API.
+### Query the Chats Rooms
 
-### Query Conversation(s)
-
-In table `_Conversation`, the default ACL authority requires master key to query.
+In `_Conversation` table , the default ACL authority requires master key to create.
 
 ```sh
 curl -X GET \
   -H "X-LC-Id: {{appid}}" \
   -H "X-LC-Key: {{masterkey}},master" \
   -G \
-  --data-urlencode 'where={"name": "first conversation"}' \
+  --data-urlencode 'where={"name": "chatroom"}' \
   --data-urlencode 'skip=1' \
   --data-urlencode 'limit=20' \
-  https://{{host}}/1.2/rtm/conversations
+  https://{{host}}/1.2/rtm/chatrooms
 ```
 
 Parameters | Optionality | Description
----|---|---
-skip |optional |
-limit | optional | together with 'skip' to realize paging
-where | optional | see [Leanstorage - Query](rest_api.html#Query).
-
+---|---|--- 
+skip | Optional | 
+limit | Optional | together with ski for pagination
+where | Optional | refer to [Leanstorage - Query](rest_api.html#Query).
 
 return
 ```
-{"results"=>[{"name"=>"test conv1", "m"=>["tom", "jerry"], "createdAt"=>"2018-01-17T04:15:33.386Z", "updatedAt"=>"2018-01-17T04:15:33.386Z", "objectId"=>"5a5ecde6c3422b738c8779d7"}]}
+{"results"=>[{"name"=>"My First Chatroom", "createdAt"=>"2018-01-17T04:15:33.386Z", "updatedAt"=>"2018-01-17T04:15:33.386Z", "objectId"=>"5a5ecde6c3422b738c8779d7"}]}
 ```
 
-### Update Conversation(s)
+### Update Chatrooms
 
-In table `_Conversation`, the default ACL authority requires master key to mutate.
+In `_Conversation` table the default ACL authority requires master key to update.
 
 ```sh
 curl -X PUT \
   -H "X-LC-Id: {{appid}}" \
   -H "X-LC-Key: {{masterkey}},master" \
   -H "Content-Type: application/json" \
-  -d '{"name":"Updated Conversation"}' \
-  https://{{host}}/1.2/rtm/conversations/{conv_id}
+  -d '{"name":"Updated Chatroom"}' \
+  https://{{host}}/1.2/rtm/chatrooms/{chatroom_id}
 ```
-
-`_Conversation` table can get updated via this interface except the m string.
 
 return
 ```
 {"updatedAt"=>"2018-01-16T03:40:37.683Z", "objectId"=>"5a5d7433c3422b31ed845e76"}
 ```
 
-### Delete Conversation(s)
+### Delete Chatrooms
 
-In table `_Conversation`, the default ACL authority requires master key to mutate.
+In `_Conversation` table the default ACL authority requires master key to update.
 
 ```sh
 curl -X DELETE \
   -H "X-LC-Id: {{appid}}" \
   -H "X-LC-Key: {{masterkey}},master" \
-  https://{{host}}/1.2/rtm/conversations/{conv_id}
+  https://{{host}}/1.2/rtm/chatrooms/{chatroom_id}
 ```
 
 return
@@ -85,96 +79,37 @@ return
 {}
 ```
 
-### Add User(s)
+### Get the online users Randomly
 
-In table `_Conversation`, the default ACL authority requires master key to mutate.
-
-```sh
-curl -X POST \
-  -H "X-LC-Id: {{appid}}" \
-  -H "X-LC-Key: {{masterkey}},master" \
-  -H "Content-Type: application/json" \
-  -d '{"client_ids": ["Tom", "Jerry"]}' \
-  https://{{host}}/1.2/rtm/conversations/{conv_id}/members
-```
-
-return
-```
-{"updatedAt"=>"2018-01-16T03:40:37.683Z", "objectId"=>"5a5d7433c3422b31ed845e76"}
-```
-
-### Remove User(s)
-
-In table `_Conversation`, the default ACL authority requires master key to mutate.
-
-```sh
-curl -X DELETE \
-  -H "X-LC-Id: {{appid}}" \
-  -H "X-LC-Key: {{masterkey}},master" \
-  -H "Content-Type: application/json" \
-  -d '{"client_ids": ["Tom", "Jerry"]}' \
-  https://{{host}}/1.2/rtm/conversations/{conv_id}/members
-```
-
-return
-```
-{"updatedAt"=>"2018-01-16T03:40:37.683Z", "objectId"=>"5a5d7433c3422b31ed845e76"}
-```
-
-### Query User(s)
-
-In table `_Conversation`, the default ACL authority requires master key to access.
-
+This interface requires master key.
 ```sh
 curl -X GET \
   -H "X-LC-Id: {{appid}}" \
   -H "X-LC-Key: {{masterkey}},master" \
-  https://{{host}}/1.2/rtm/conversations/{conv_id}/members
+  https://{{host}}/1.2/rtm/chatrooms/{chatroom_id}/members
 ```
 
 return
-
 ```
-{"result": ["client1","client2"]}
-```
-
-### Add mute User(s)
-
-In table `_Conversation`, the default ACL authority requires master key to access.
-
-```sh
-curl -X POST \
-  -H "X-LC-Id: {{appid}}" \
-  -H "X-LC-Key: {{masterkey}},master" \
-  -H "Content-Type: application/json" \
-  -d '{"client_ids": ["Tom", "Jerry"]}' \
-  https://{{host}}/1.2/rtm/conversations/{conv_id}/mutes
+{"result": ["clientid1", "clientid2", "clientid3"]}
 ```
 
-return
+### Query the count of online users
 
-```
-{"updatedAt"=>"2018-01-16T03:40:37.683Z", "objectId"=>"5a5d7433c3422b31ed845e76"}
-```
-
-### Query the mute User(s)
-
-In table `_Conversation`, the default ACL authority requires master key to access.
-
+This interface requires master key.
 ```sh
 curl -X GET \
   -H "X-LC-Id: {{appid}}" \
   -H "X-LC-Key: {{masterkey}},master" \
-  https://{{host}}/1.2/rtm/conversations/{conv_id}/mutes
+  https://{{host}}/1.2/rtm/chatrooms/{chatroom_id}/members/online-count
 ```
 
 return
-
 ```
-{"result": ["client1", "client2"]}
+{"result": 3}
 ```
 
-### One-on-One Chatting/Group Chats-send messages
+### Chatrooms-send messages
 
 This interface requires master key.
 
@@ -184,11 +119,10 @@ curl -X POST \
   -H "X-LC-Key: {{masterkey}},master" \
   -H "Content-Type: application/json" \
   -d '{"from_client": "", "message": ""}' \
-  https://{{host}}/1.2/rtm/conversations/{conv_id}/messages
+  https://{{host}}/1.2/rtm/chatrooms/{chatroom_id}/messages
 ```
-
-**Warning**, due to the management nature of the interface. When you send mesages via this interface, we will not check whether **from_client**  has the authority to message in the conversation. All the requests will be approved. PLEASE BE CAUTIOUS TO USE THIS INTERFACE.
-If you used the [Rich Media format](./realtime_v2.html#Message), when sending messages **message** field has some required format, [Rich Media format guide](./realtime_rest_api.html#Rich Media format guide) has the details.
+**Warning**, due to the management nature of the interface. When you send meesages via this interface, we will not check whether **from_client**  has the authority to message in the conversation. All the requests will be approved. PLEASE BE CAUTIOUS TO USE THIS INTERFACE.
+If you used the [Rich Media format](./realtime_v2.html#Message), when sending messages **message** field has some required format, [Rich Media format guide](./realtime_rest_api.html#Rich Media format guide) has the details. In addition, chatroom **does not support** synchronously send messages to these online **from_client**.
 
 Parameters | Optionality | Description
 ---|---|---
@@ -200,6 +134,8 @@ push_data | optional | set the offline push content of this message as attachmen
 priority | optional | set priority of the message in [high,normal,low]. The parameter is not case-sensitive and default on HIGH. This parameter only works on transient and Chats Rooms messages. Messages are in queue given it has high priority but the connection is blocked.
 mention_all| optional | boolean type, remind all the participants to have an eye on this message.
 mention_client_ids | optional | array type, tag the participants who need have eyes. No more than 20 client Ids.
+
+return:
 
 return: 
 
@@ -218,7 +154,7 @@ curl -X GET \
   -H "X-LC-Id: {{appid}}" \
   -H "X-LC-Key: {{masterkey}},master" \
   -H "Content-Type: application/json" \
-  https://{{host}}/1.2/rtm/conversations/{conv_id}/messages
+  https://{{host}}/1.2/rtm/chatrooms/{conv_id}/messages
 ```
 
 Parameters | Optionality | Description
@@ -269,7 +205,7 @@ return:
 ]
 ```
 
-### One-on-One Chatting/Group Chats-Modify the Messages
+### Chatrooms-Modify the Messages
 
 This interface requires the master key.
 From Objective-C SDK v6.0.0、Android SDK v4.4.0、JavaScript SDK v3.5.0 ，we support the new function of modification and recall. After modification and recall, the cached messages on client terminals will get altered. For the old version，only the messages on server will get altered but not the cached client messages.
@@ -279,7 +215,7 @@ curl -X PUT \
   -H "X-LC-Key: {{masterkey}},master" \
   -H "Content-Type: application/json" \
   -d '{"from_client": "", "message": "", "timestamp": 123}' \
-  https://{{host}}/1.2/rtm/conversations/{conv_id}/messages/{message_id}
+  https://{{host}}/1.2/rtm/chatrooms/{chatroom_id}/messages/{message_id}
 ```
 
 Parameters | Optionality | Description
@@ -307,7 +243,7 @@ curl -X PUT \
   -H "X-LC-Key: {{masterkey}},master" \
   -H "Content-Type: application/json" \
   -d '{"from_client": "", "timestamp": 123}' \
-  https://{{host}}/1.2/rtm/conversations/{conv_id}/messages/{message_id}/recall
+  https://{{host}}/1.2/rtm/chatrooms/{chatroom_id}/messages/{message_id}/recall
 ```
 
 Parameters | Optionality | Description
@@ -327,7 +263,6 @@ This interface has frequency limit, click [here](#Interface Requests Frequency l
 ### Delete Messages 
 
 This interface requires master key.
-
 ```sh
 curl -X DELETE \
   -H "X-LC-Id: {{appid}}" \
@@ -335,9 +270,8 @@ curl -X DELETE \
   -G \
   --data-urlencode 'from_client=some-client-id' \
   --data-urlencode 'timestamp=123' \
-  https://{{host}}/1.2/rtm/conversations/{conv_id}/messages/{message_id}
+  https://{{host}}/1.2/rtm/chatrooms/{chatroom_id}/messages/{message_id}
 ```
-
 > NOTE: this interface will delete the messages on the Server , it does no effect on the client terminal
 
 Parameters | Optionality | Description
@@ -361,7 +295,6 @@ curl -X POST \
   -d '{"client_id": "some-client-id", "ttl": 50}' \
   https://{{host}}/1.2/rtm/conversations/{conv_id}/temporary-silenceds
 ```
-
 Parameters | Description
 ---|---
 client_id | prohibited Client ID, string
@@ -372,25 +305,25 @@ return
 ```
 {}
 ```
-
 ### Remove Temporary prohibited user
 
 This interface requires master key.
+
 ```sh
 curl -X DELETE \
   -H "X-LC-Id: {{appid}}" \
   -H "X-LC-Key: {{masterkey}},master" \
   -G \
   --data-urlencode 'client_id=some-client-id' \
-  https://{{host}}/1.2/rtm/conversations/{conv_id}/temporary-silenceds
+  https://{{host}}/1.2/rtm/chatrooms/{chatroom_id}/temporary-silenceds
 ```
 
-return
+return 
 
 ```
 {}
 ```
-
+ 
 ### Conversation Authority
 
 Refer to [Authority management and Block List](realtime-guide-senior.html#Authority management and block List)
@@ -398,15 +331,14 @@ Refer to [Authority management and Block List](realtime-guide-senior.html#Author
 #### Add Authority
 
 This interface requires master key.
-Each conversation is permitted to add 500 permanent prohibited users.
-
+Each chatroom is permitted to add 10,000 permanent prohibited users.
 ```sh
 curl -X POST \
   -H "X-LC-Id: {{appid}}" \
   -H "X-LC-Key: {{masterkey}},master" \
   -H "Content-Type: application/json" \
   -d '{"clientId": "client", "role": "role"}' \
-  https://{{host}}/1.2/rtm/conversations/{conv_id}/member-infos
+  https://{{host}}/1.2/rtm/chatrooms/{conv_id}/member-infos
 ```
 
 Parameters | Description
@@ -421,12 +353,13 @@ return
 
 #### Delete Authority
 
-This interface requries master key.
+This interface requires master key.
+
 ```sh
 curl -X DELETE \
   -H "X-LC-Id: {{appid}}" \
   -H "X-LC-Key: {{masterkey}},master" \
-  https://{{host}}/1.2/rtm/conversations/{conv_id}/member-infos/{info-id}
+  https://{{host}}/1.2/rtm/chatrooms/{conv_id}/member-infos/{info-id}
 ```
 
 Parameters | Description
@@ -440,14 +373,15 @@ return
 
 #### Update Authority
 
-This interface requires master key
+This interface requires master key.
+
 ```sh
 curl -X PUT \
   -H "X-LC-Id: {{appid}}" \
   -H "X-LC-Key: {{masterkey}},master" \
   -H "Content-Type: application/json" \
   -d '{"clientId": "client", "role": "role"}' \
-  https://{{host}}/1.2/rtm/conversations/{conv_id}/member-infos/{info-id}
+  https://{{host}}/1.2/rtm/chatrooms/{conv_id}/member-infos/{info-id}
 ```
 
 Parameters | Description
@@ -464,6 +398,7 @@ return
 #### Query Authority
 
 This interface requires master key.
+
 ```sh
 curl -X GET \
   -H "X-LC-Id: {{appid}}" \
@@ -471,7 +406,7 @@ curl -X GET \
   -G \
   --data-urlencode 'skip=1' \
   --data-urlencode 'limit=20' \
-  https://{{host}}/1.2/rtm/conversations/{conv_id}/member-infos
+  https://{{host}}/1.2/rtm/chatrooms/{conv_id}/member-infos
 ```
 
 Parameters | Description
@@ -485,17 +420,18 @@ role | the role included in the query
 {"results": [{"clientId"=>"client1", "objectId"=>"5a5d7433c3422b31ed845e76", "role": "Manager"}]}
 ```
 
-#### Add permanent prohibited user
+#### Add permanent prohibited users
 
-This interface requries master key.
-Each conversation is permitted to add 500 permanent prohibited users.
+This interface requires master key.
+Each chatroom is permitted to add 10,000 permanent prohibited users.
+
 ```sh
 curl -X POST \
   -H "X-LC-Id: {{appid}}" \
   -H "X-LC-Key: {{masterkey}},master" \
   -H "Content-Type: application/json" \
   -d '{"client_ids": ["client1", "client2"]}' \
-  https://{{host}}/1.2/rtm/conversations/{conv_id}/permanent-silenceds
+  https://{{host}}/1.2/rtm/chatrooms/{conv_id}/permanent-silenceds
 ```
 
 Parameters | Description
@@ -510,13 +446,14 @@ return
 
 #### Remove permanent prohibited user
 
-This interface requires master key
+This interface requires master key.
+
 ```sh
 curl -X DELETE \
   -H "X-LC-Id: {{appid}}" \
   -H "X-LC-Key: {{masterkey}},master" \
   -d '{"client_ids": ["client1", "client2"]}' \
-  https://{{host}}/1.2/rtm/conversations/{conv_id}/permanent-silenceds
+  https://{{host}}/1.2/rtm/chatrooms/{conv_id}/permanent-silenceds
 ```
 
 return
@@ -528,13 +465,14 @@ return
 #### Query the permanent prohibited List
 
 This interface requires master key
+
 ```sh
 curl -X GET \
   -H "X-LC-Id: {{appid}}" \
   -H "X-LC-Key: {{masterkey}},master" \
   -G \
   --data-urlencode 'limit=20' \
-  https://{{host}}/1.2/rtm/conversations/{conv_id}/permanent-silenceds
+  https://{{host}}/1.2/rtm/chatrooms/{conv_id}/permanent-silenceds
 ```
 
 Parameters | Optionality | Description
@@ -552,18 +490,19 @@ return
 
 Refer to [Blocked List](realtime-guide-senior.html#Blocked List)
 
-#### Add users to conversation Blocked List 
+#### Add chatroom Blocked List
 
 This interface requires master key.
 
-The blocked user will get removed from the conversation and prohibited from joining in. Each conversation can have 500 blocked users at most.
+The blocked user will get removed from the conversation and prohibited from joining in. Each chatroom can have 10,000 blocked users at most.
+
 ```sh
 curl -X POST \
   -H "X-LC-Id: {{appid}}" \
   -H "X-LC-Key: {{masterkey}},master" \
   -H "Content-Type: application/json" \
   -d '{"client_ids": ["client1", "client2"]}' \
-  https://{{host}}/1.2/rtm/conversations/{conv_id}/blacklists
+  https://{{host}}/1.2/rtm/chatrooms/{chatroom_id}/blacklists
 ```
 
 Parameters | Description
@@ -576,9 +515,28 @@ return
 {}
 ```
 
+#### Remove chatroom Blocked List
+
+This interface requires master key.
+
+```sh
+curl -X DELETE \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  -d '{"client_ids": ["client1", "client2"]}' \
+  https://{{host}}/1.2/rtm/chatrooms/{chatroom_id}/blacklists
+```
+
+返回
+
+```
+{}
+```
+
 #### Query the Blocked List
 
 This interface requires master key.
+
 ```sh
 curl -X GET \
   -H "X-LC-Id: {{appid}}" \
@@ -597,14 +555,4 @@ return
 ```
 {"client_ids": ["client1", "client2"]}
 ```
-
-
-
-
-
-
-
-
-
-
 

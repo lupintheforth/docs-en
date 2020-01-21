@@ -1,4 +1,4 @@
-# Realtime Message REST API User Guide
+# Realtime Message REST API User Guide (UNDER REVIEW)
 
 ## Request Format
 
@@ -32,6 +32,9 @@ In addition, the client related requests are labelled with `rtm/clients`.
 Lastly, some [global APIs](#Global_API) are labelled with `rtm/{function}`, like `rtm/all-conversations` will search for conversations of all types.
 
 {% include "views/_rtm_rest_api_normal.njk" %}
+{% include "views/_rtm_rest_api_chatroom.njk" %}
+{% include "views/_rtm_rest_api_system.njk" %}
+{% include "views/_rtm_rest_api_client.njk" %}
 
 ## Global API
 
@@ -222,7 +225,7 @@ According to the daily call frequency peak rate , we do differential pricing. As
 | calling / min | pricing |
 | - | - |
 | - | - |
-| 0 ～ 1800 | 免费 |
+| 0 ～ 1800 | Free |
 | 1801 ~ 3600 | $6 USD / day |
 | 3601 ~ 5400 | $9 USD / day |
 | 5401 ~ 7200 | $12 USD / day |

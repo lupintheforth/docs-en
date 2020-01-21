@@ -1,0 +1,217 @@
+## User
+
+### Query the online user
+
+This interface requires master key.
+```sh
+curl -X POST \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  -H "Content-Type: application/json" \
+  -d '{"client_ids": ["Tom", "Jerry"]}' \
+  https://{{host}}/1.2/rtm/clients/check-online
+```
+
+Parameters | Optionality | Description
+---|---|---
+client_ids | required | queried client ID list, 20 at most
+
+return
+
+```
+{"results":["client1"]}
+```
+
+### Query count of unread messages
+
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -G \
+  --data-urlencode 'conv_id=...' \
+  https://{{host}}/1.2/rtm/clients/{client_id}/unread-count
+```
+
+Parameters | Optionality | Description
+---|---|---
+conv_id | optional | conversation ID, query all the unread message by the client in all the conversations.
+
+return 
+
+```
+{"count":1}
+```
+
+### Forced Offline 
+
+This interface requires master key.
+```sh
+curl -X POST \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  -H "Content-Type: application/json" \
+  -d '{"reason": "why"}' \
+  https://{{host}}/1.2/rtm/clients/{client_id}/kick
+```
+
+Parameters | Optionality | Description
+---|---|---
+reason | optional | offline reason, string type , no more than 20 characters.
+
+return 
+
+```
+{}
+```
+
+### Query the subscribed Official Account 
+
+This interface requires master key.
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  -G \
+  --data-urlencode 'conv_id=...' \
+  --data-urlencode 'timestamp=...' \
+  --data-urlencode 'limit=...' \
+  --data-urlencode 'direction=...' \
+  https://{{host}}/1.2/rtm/clients/{client_id}/service-conversations
+```
+
+Parameters | Optionality | Type | Description
+---|---|---|---
+conv_id | optional | string | Official account ID at the start of the query. The query will start to traverse at the beginning of the subscription list if left blank. The result will not include the start ID.
+timestamp | optional | integer | query the timestamp of the subscription. **Always** use with conv_id, value should be matched to timestamp of the conversation specified by conv_id, unit on milisecond
+limit | optional | integer | returned number limit, default on 50.
+direction | optional | string | sort the result on time order, old indicates descending , new indicates ascending. The parameter is default on new. old will return the latest subscribed conversation while new will return the oldest conversation subscribed.
+
+return the subscribed system conversations list:
+
+```
+[{"timestamp":1482994126561,"subscriber":"XXX","conv_id":"convId1"},
+ {"timestamp":1491467945277,"subscriber":"XXX","conv_id":"convId2"}, ...]
+```
+
+`timestamp` is the subscribed time by the user, `subscriber` is the subscriber client id. If the query is not exhaustive,  the last Official Account ID and subscription time should be retrieved as new conv_id and timestamp parameters for the next query.
+
+### Query the history messages
+
+This interface requires master key.
+
+Invoke this interface can query messages sent by specified client_id in One-on-One Chatting/Group Chats and Chats Room.
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  https://{{host}}/1.2/rtm/clients/{client_id}/messages
+```
+
+parameters and the returned value refer to [One-on-One Chatting/Group Chats query the history messages](realtime_rest_api.html#Query history messages) interface.
+
+### Add Blocked List 
+
+This interface requires master key.
+
+One client is permitted to add one group chat/ chatroom / Official Account to the Blocked list. Then no other clients is prohibited from joining in the conversations.
+Currently client cannot add another client into the Blocked List.
+
+```sh
+curl -X POST \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  -H "Content-Type: application/json" \
+  -d '{"conv_id": ""}' \
+  https://{{host}}/1.2/rtm/clients/{client_id}/blacklists
+```
+
+Parameters | Optionality | Description
+---|---|---
+conv_id | required | blocked Group chats/chatroom/Official Account ID
+
+return
+```
+{}
+```
+
+### Remove Blocked List
+
+```sh
+curl -X DELETE \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  -H "Content-Type: application/json" \
+  -d '{"conv_id": ""}' \
+  https://{{host}}/1.2/rtm/clients/{client_id}/blacklists
+```
+
+return
+```
+{}
+```
+
+### Query Blocked List 
+
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  https://{{host}}/1.2/rtm/clients/{client_id}/blacklists
+```
+
+Parameters | Optionality | Description
+---|---|---
+limit | Optional | together with next to realize pagination , default on 10
+next | Optional | returned on the first query, the following query with this parameter to realize pagination
+
+return
+
+```
+{"conv_ids"=>["conv1"], "next"=>"1"}
+```
+
+### Retrieve sign-in signature
+
+This interface allows app using [AV.User](rest_api.html#User-1) expressly realize sign-in authentication. Sign-in authentication is closed by default, go to [Dashboard > Messaging > LeanMessage > Settings > LeanMessage settings](/dashboard/messaging.html?appid={{appid}}#/message/realtime/conf) , tick **Verify signatures for logging in** to enable it.
+
+```sh
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{appkey}}" \
+  -G \
+  --data-urlencode 'session_token=some-token' \
+  https://{{host}}/1.2/rtm/clients/sign
+```
+
+Parameters | Optionality | Description
+---|---|---
+session_token | required | sessionToken for AV.User
+
+return
+
+```
+{"nonce": "", "timestamp": "", "client_id": "", "signature": ""}
+```
+
+To facilitate the Fine-grained control for users, realizing functions self-customized (Blocked List), this interface provides hook function `_rtmClientSign`. After Verifying the sessionToken to invoke, the input parameter is JSON object comprised of AV.User.
+```json
+{
+    "email": "",
+    "sessionToken": "",
+    "updatedAt": "",  // format：2017-07-11T07:58:10.149Z
+    "phone": "",
+    "objectId": "",
+    "username": "",
+    "createdAt": "",  // format：2017-07-11T07:58:10.149Z
+    "emailVerified": true/false,
+    "mobilePhoneVerified": true/false
+}
+```
+Two types of results may receive:
+```json
+{"result": true} // permitted to sign
+{"result": false, "error": "error message"}  // rejected to sign
+```
+
+
