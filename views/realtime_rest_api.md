@@ -40,7 +40,7 @@ Lastly, some [global APIs](#Global_API) are labelled with `rtm/{function}`, like
 
 ### Count the Users
 
-This interface will return the total number of the online users and the total number of the independent users with logged in history. This interface requires master key.
+This interface will return the total number of the online users and the total number of the independent users logged in today. This interface requires master key.
 
 ```sh
 curl -X GET \
@@ -49,13 +49,13 @@ curl -X GET \
   https://{{host}}/1.2/rtm/stats
 ```
 
-return
+It returns:
 
 ```
 {"result":{"online_user_count":10212,"user_count_today":1002324}}
 ```
 
-`online_user_count` indicates the current online users on the app and `user_count_today` indicates the independent users with logged in history today.
+`online_user_count` indicates the current online users on the app and `user_count_today` indicates the independent users logged in today.
 
 ### Query all the Conversations
 
@@ -71,10 +71,10 @@ curl -X GET \
 Parameters | Optionality | description
 ---|---|---
 skip |optional |
-limit | optional | together with 'skip' to realize paging
-where | optional | see [Leanstorage - Query](rest_api.html#Query).
+limit | optional | together with 'skip' to implement paging
+where | optional | see [Leanstorage - Query](rest_api.html#Queries).
 
-return
+It returns:
 ```
 {"results"=>[{"name"=>"test conv1", "m"=>["tom", "jerry"], "createdAt"=>"2018-01-17T04:15:33.386Z", "updatedAt"=>"2018-01-17T04:15:33.386Z", "objectId"=>"5a5ecde6c3422b738c8779d7"}]}
 ```
@@ -94,14 +94,14 @@ curl -X POST \
 
 Parameters | Optionality | Type | Description
 ---|---|---|---
-from_client | requried | string | sender ID
-conv_id | required | string | converation id to send (only in the official accounts)
-message | requried | string | message content (generally the content should be of string type but no rigorous limitations on the type. <br/> as long as the size is less than 5kb, the developer can send message of any types.)
+from_client | required | string | sender ID
+conv_id | required | string | conversation id to send (only in the official accounts)
+message | required | string | message content (generally the content should be of string type but no rigorous limitations on the type. <br/> as long as the size is less than 5kb, the developer can send message of any types.)
 valid_till | Optional | number | expiry time, UTC timestamp(millisecond), at most and default on 1 month later.
-push | Optional | string or JSON | attached push, **all** the iOS and Windows Phone users will receive the notification if sets.
+push | Optional | string or JSON | attached push, **all** the iOS and Android users will receive the notification if sets.
 transient | Optional | boolean | default as false. This field is marked as whether the broadcast is transient. This will broadcast to all the online users. The offline users will not receive the copies after later logging in.
 
-Push formats are in align with the `data` part of  [Push Notification REST API message content](push_guide.html#message content_Data). If you need specified developer certificate push, you have to configure the `"_profile": "dev"` in the JSON for example:
+Push formats are in alignment with the `data` part of  [Push Notification REST API message content](push_guide.html#message content_Data). If you need to specify the developer push certificate, you have to configure the `"_profile": "dev"` in the JSON for example:
 
 ```
 {
@@ -137,7 +137,7 @@ from_client | required | sender ID
 message | required | message content
 timestamp | required | timestamp of the message
 
-return
+It returns:
 
 ```
 {"result": {}}
@@ -162,7 +162,7 @@ Parameters | Optionality | Description
 ---|---|---
 message_id | required | target id, String
 
-return:
+It returns:
 
 blank JSON object `{}`.
 
@@ -177,7 +177,7 @@ curl -X GET \
   https://{{host}}/1.2/rtm/broadcasts?conv_id={conv_id}
 ```
 
-Paramters | Optionality | Description
+Parameters | Optionality | Description
 ---|---|---
 conv_id | required | official account ID
 limit | optional | quantity of the messages returned
@@ -194,7 +194,7 @@ curl -X GET \
   https://{{host}}/1.2/rtm/messages
 ```
 
-Parameters and the returned value can refer to [One-on-One Chatting/Group Chats query the history messages](realtime_rest_api.html#query history messages) interface.
+Refer to [One-on-One Chatting/Group Chats query the history messages](realtime_rest_api.html#query history messages) interface.
 
 ## Interface requests Frequency Limitation
 
@@ -215,10 +215,10 @@ Operations related to realtime messages invoking REST API has request frequency 
 |---------|---------------|
 |maximum 9000 requests/min, 1800 requests/min by default|120 requests/min|
 
-The Daily usage is calculated based on all the interfaces. LeanCloud will respond with error code 429 if exceeds the limitation until one minutes later. The interface will reboot after that.
+The Daily usage is calculated based on all the interfaces. LeanCloud will respond with error code 429. If exceeding the limit. The REST API will continue to handle requests after one minute.
 
 The Buisness call ceiling can get mutated in [Dashboard > Messaging > LeanMessage > Settings > Thresholds > Frequency limit for calling API for basic messages][dashboard-rtm-limit].
-According to the daily call frequency peak rate , we do differential pricing. As in the following table:
+You will be billed for daily request frequency rate peak, as below:
 
 [dashboard-rtm-limit]: /dashboard/messaging.html?appid={{appid}}#/message/realtime/conf
 
@@ -231,7 +231,7 @@ According to the daily call frequency peak rate , we do differential pricing. As
 | 5401 ~ 7200 | $12 USD / day |
 | 7201 ~ 9000 | $15 USD / day 
 
-|Daily calling peak rate can be viewed in [Dashboard > Messaging > LeanMessage > API Peak connections][dashboard-rtm-stats].
+Daily calling peak rate can be viewed in [Dashboard > Messaging > LeanMessage > API Peak connections][dashboard-rtm-stats].
 
 [dashboard-rtm-stats]: /dashboard/messaging.html?appid={{appid}}#/message/realtime/stat
 
@@ -248,7 +248,7 @@ According to the daily call frequency peak rate , we do differential pricing. As
 |Frequency limit | 30 times per app /min | 10 times per app/min |
 |Daily usage | 1000 at maximum | 100 at maximum |
 
-The limitation is calculated based on all the interfaces. LeanCloud will respond with error code 429 if exceeds the limitation until one minutes later. The interface will reboot after that. The request will not be proceeded if exceeded the daily usage amount. All the requests will be responded by error 429.
+The limitation is calculated based on all the interfaces. LeanCloud will respond with error code 429 if exceeding the limit. The REST API will continue to handle requests after one minute. The request will not be proceeded if exceeded the daily usage amount. All the requests will be responded by error 429.
 
 ### Brodcast Messages
 * [Global Broadcasts](#Global Broadcasts)
@@ -261,5 +261,5 @@ The limitation is calculated based on all the interfaces. LeanCloud will respond
 |Frequency limit | 10 times per app /min | once per app/min |
 |Daily usage | 30 at maximum | 10 at maximum |
 
-The limitation is calculated based on all the interfaces. LeanCloud will respond with error code 429 if exceeds the limitation until one minutes later. The interface will reboot after that. The request will not be proceeded if exceeded the daily usage amount. All the requests will be responded by error 429.
+The limitation is calculated based on all the interfaces. LeanCloud will respond with error code 429 if exceeding the limit. The REST API will continue to handle requests after one minute. The request will not be proceeded if exceeded the daily usage amount. All the requests will be responded by error 429.
 

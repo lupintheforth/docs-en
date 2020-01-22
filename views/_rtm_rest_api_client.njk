@@ -1,6 +1,6 @@
-## User
+## User 
 
-### Query the online user
+### Query the Online User
 
 This interface requires master key.
 ```sh
@@ -14,15 +14,15 @@ curl -X POST \
 
 Parameters | Optionality | Description
 ---|---|---
-client_ids | required | queried client ID list, 20 at most
+client_ids | required | clients to query, at most 20
 
-return
+It returns:
 
 ```
 {"results":["client1"]}
 ```
 
-### Query count of unread messages
+### Query Count of unread Messages
 
 ```sh
 curl -X GET \
@@ -35,15 +35,15 @@ curl -X GET \
 
 Parameters | Optionality | Description
 ---|---|---
-conv_id | optional | conversation ID, query all the unread message by the client in all the conversations.
+conv_id | optional | conversation ID, if not specified, query all the unread message by the client in all the conversations.
 
-return 
+It returns: 
 
 ```
 {"count":1}
 ```
 
-### Forced Offline 
+### Force Offline 
 
 This interface requires master key.
 ```sh
@@ -59,7 +59,7 @@ Parameters | Optionality | Description
 ---|---|---
 reason | optional | offline reason, string type , no more than 20 characters.
 
-return 
+It returns: 
 
 ```
 {}
@@ -83,11 +83,11 @@ curl -X GET \
 Parameters | Optionality | Type | Description
 ---|---|---|---
 conv_id | optional | string | Official account ID at the start of the query. The query will start to traverse at the beginning of the subscription list if left blank. The result will not include the start ID.
-timestamp | optional | integer | query the timestamp of the subscription. **Always** use with conv_id, value should be matched to timestamp of the conversation specified by conv_id, unit on milisecond
-limit | optional | integer | returned number limit, default on 50.
-direction | optional | string | sort the result on time order, old indicates descending , new indicates ascending. The parameter is default on new. old will return the latest subscribed conversation while new will return the oldest conversation subscribed.
+timestamp | optional | integer | query the timestamp of the subscription. If you have specified the conv_id parameter, you must also specify this parameter and its value should match the time of the conversation specified by conv_id. Its unit is millisecond.
+limit | optional | integer | return number limit, default on 50.
+direction | optional | string | sort the result on time order, old indicates descending , new indicates ascending. The parameter is default on new. old will It returns: the latest subscribed conversation while new will It returns: the oldest conversation subscribed.
 
-return the subscribed system conversations list:
+It returns: the subscribed system conversations list:
 
 ```
 [{"timestamp":1482994126561,"subscriber":"XXX","conv_id":"convId1"},
@@ -100,7 +100,7 @@ return the subscribed system conversations list:
 
 This interface requires master key.
 
-Invoke this interface can query messages sent by specified client_id in One-on-One Chatting/Group Chats and Chats Room.
+Invoke this interface can query messages sent by specified client_id in One-on-One Chatting/Group Chats and Chatrooms.
 ```sh
 curl -X GET \
   -H "X-LC-Id: {{appid}}" \
@@ -108,14 +108,14 @@ curl -X GET \
   https://{{host}}/1.2/rtm/clients/{client_id}/messages
 ```
 
-parameters and the returned value refer to [One-on-One Chatting/Group Chats query the history messages](realtime_rest_api.html#Query history messages) interface.
+For parameters and the returned value refer to [One-on-One Chatting/Group Chats query the history messages](realtime_rest_api.html#Query history messages) interface.
 
 ### Add Blocked List 
 
 This interface requires master key.
 
-One client is permitted to add one group chat/ chatroom / Official Account to the Blocked list. Then no other clients is prohibited from joining in the conversations.
-Currently client cannot add another client into the Blocked List.
+One client is permitted to add one group chat/ chatroom / Official Account to the Blocked list. Then this client cannot be added to these blocked conversations by other clients.
+Currently one client cannot add another client into the Blocked List.
 
 ```sh
 curl -X POST \
@@ -130,12 +130,12 @@ Parameters | Optionality | Description
 ---|---|---
 conv_id | required | blocked Group chats/chatroom/Official Account ID
 
-return
+It returns:
 ```
 {}
 ```
 
-### Remove Blocked List
+### Remove from Blocked List
 
 ```sh
 curl -X DELETE \
@@ -146,7 +146,7 @@ curl -X DELETE \
   https://{{host}}/1.2/rtm/clients/{client_id}/blacklists
 ```
 
-return
+It returns:
 ```
 {}
 ```
@@ -162,10 +162,10 @@ curl -X GET \
 
 Parameters | Optionality | Description
 ---|---|---
-limit | Optional | together with next to realize pagination , default on 10
-next | Optional | returned on the first query, the following query with this parameter to realize pagination
+limit | Optional | together with next to implement pagination , default on 10
+next | Optional | It returns:ed on the first query, the following query with this parameter to implement pagination
 
-return
+It returns:
 
 ```
 {"conv_ids"=>["conv1"], "next"=>"1"}
@@ -173,7 +173,7 @@ return
 
 ### Retrieve sign-in signature
 
-This interface allows app using [AV.User](rest_api.html#User-1) expressly realize sign-in authentication. Sign-in authentication is closed by default, go to [Dashboard > Messaging > LeanMessage > Settings > LeanMessage settings](/dashboard/messaging.html?appid={{appid}}#/message/realtime/conf) , tick **Verify signatures for logging in** to enable it.
+This interface allows app using [AV.User](rest_api.html#Users) implement sign-in authentication quickly. Sign-in authentication is closed by default, go to [Dashboard > Messaging > LeanMessage > Settings > LeanMessage settings](/dashboard/messaging.html?appid={{appid}}#/message/realtime/conf) , tick **Verify signatures for logging in** to enable it.
 
 ```sh
 curl -X GET \
@@ -188,13 +188,13 @@ Parameters | Optionality | Description
 ---|---|---
 session_token | required | sessionToken for AV.User
 
-return
+It returns:
 
 ```
 {"nonce": "", "timestamp": "", "client_id": "", "signature": ""}
 ```
 
-To facilitate the Fine-grained control for users, realizing functions self-customized (Blocked List), this interface provides hook function `_rtmClientSign`. After Verifying the sessionToken to invoke, the input parameter is JSON object comprised of AV.User.
+To facilitate the fine-grained control for users, realizing functions self-customized (Blocked List), this interface provides a hook function `_rtmClientSign`. This hook will be invoked after verifying the sessionToken, Its parameter is a JSON object of AV.User.
 ```json
 {
     "email": "",
@@ -208,7 +208,7 @@ To facilitate the Fine-grained control for users, realizing functions self-custo
     "mobilePhoneVerified": true/false
 }
 ```
-Two types of results may receive:
+You may receive two types of results:
 ```json
 {"result": true} // permitted to sign
 {"result": false, "error": "error message"}  // rejected to sign

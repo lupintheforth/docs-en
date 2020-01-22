@@ -2,7 +2,7 @@
 
 ### Create Conversation
 
-In table `_Conversation`, the default ACL authority requires master key to create.
+In table `_Conversation`, the default ACL permission requires master key to create.
 
 ```sh
 curl -X POST \
@@ -13,9 +13,9 @@ curl -X POST \
   https://{{host}}/1.2/rtm/conversations
 ```
 
-The above instance will create an elementary conversation, including two initial participants having client ID 'BillGates' and 'SteveJobs'. A success creation will return the objectId. Namely , the rtm message ID. The client terminal can send message with this code. The created conversations can be queried from table `_Conversation`. Strings in conversations can refer to the [Conversation](realtime_v2.html#Conversation) in Realtime Message - guide. Inputting `"unique": true` will ensure the uniqueness of the conversation.
+The above instance will create an basic conversation, including two initial participants having client ID 'BillGates' and 'SteveJobs'. A success creation will return the objectId. Namely , the conversation ID. The client side can send message with this code. The created conversations can be queried from table `_Conversation`. Fields in conversations can refer to the [Conversation](realtime_v2.html#Conversation) in LeanMessage guide. Passing `"unique": true` will ensure the uniqueness of the conversation.rtm
 
-return
+It returns:
 ```
 {"objectId"=>"5a5d7432c3422b31ed845e75", "createdAt"=>"2018-01-16T03:40:32.814Z"}
 ```
@@ -24,7 +24,7 @@ The only distinction between One-on-One Chatting and Group Chats is the number o
 
 ### Query Conversation(s)
 
-In table `_Conversation`, the default ACL authority requires master key to query.
+In table `_Conversation`, the default ACL permission requires master key to query.
 
 ```sh
 curl -X GET \
@@ -40,18 +40,18 @@ curl -X GET \
 Parameters | Optionality | Description
 ---|---|---
 skip |optional |
-limit | optional | together with 'skip' to realize paging
+limit | optional | together with 'skip' to implement paging
 where | optional | see [Leanstorage - Query](rest_api.html#Query).
 
 
-return
+It returns:
 ```
 {"results"=>[{"name"=>"test conv1", "m"=>["tom", "jerry"], "createdAt"=>"2018-01-17T04:15:33.386Z", "updatedAt"=>"2018-01-17T04:15:33.386Z", "objectId"=>"5a5ecde6c3422b738c8779d7"}]}
 ```
 
 ### Update Conversation(s)
 
-In table `_Conversation`, the default ACL authority requires master key to mutate.
+In table `_Conversation`, the default ACL permission requires master key to mutate.
 
 ```sh
 curl -X PUT \
@@ -62,16 +62,16 @@ curl -X PUT \
   https://{{host}}/1.2/rtm/conversations/{conv_id}
 ```
 
-`_Conversation` table can get updated via this interface except the m string.
+`_Conversation` table can get updated via this interface except the m field.
 
-return
+It returns:
 ```
 {"updatedAt"=>"2018-01-16T03:40:37.683Z", "objectId"=>"5a5d7433c3422b31ed845e76"}
 ```
 
 ### Delete Conversation(s)
 
-In table `_Conversation`, the default ACL authority requires master key to mutate.
+In table `_Conversation`, the default ACL permission requires master key to mutate.
 
 ```sh
 curl -X DELETE \
@@ -80,14 +80,14 @@ curl -X DELETE \
   https://{{host}}/1.2/rtm/conversations/{conv_id}
 ```
 
-return
+It returns:
 ```
 {}
 ```
 
 ### Add User(s)
 
-In table `_Conversation`, the default ACL authority requires master key to mutate.
+In table `_Conversation`, the default ACL permission requires master key to mutate.
 
 ```sh
 curl -X POST \
@@ -98,14 +98,14 @@ curl -X POST \
   https://{{host}}/1.2/rtm/conversations/{conv_id}/members
 ```
 
-return
+
 ```
 {"updatedAt"=>"2018-01-16T03:40:37.683Z", "objectId"=>"5a5d7433c3422b31ed845e76"}
 ```
 
 ### Remove User(s)
 
-In table `_Conversation`, the default ACL authority requires master key to mutate.
+In table `_Conversation`, the default ACL permission requires master key to mutate.
 
 ```sh
 curl -X DELETE \
@@ -116,14 +116,14 @@ curl -X DELETE \
   https://{{host}}/1.2/rtm/conversations/{conv_id}/members
 ```
 
-return
+It returns:
 ```
 {"updatedAt"=>"2018-01-16T03:40:37.683Z", "objectId"=>"5a5d7433c3422b31ed845e76"}
 ```
 
 ### Query User(s)
 
-In table `_Conversation`, the default ACL authority requires master key to access.
+In table `_Conversation`, the default ACL permission requires master key to access.
 
 ```sh
 curl -X GET \
@@ -132,7 +132,7 @@ curl -X GET \
   https://{{host}}/1.2/rtm/conversations/{conv_id}/members
 ```
 
-return
+It returns:
 
 ```
 {"result": ["client1","client2"]}
@@ -140,7 +140,7 @@ return
 
 ### Add mute User(s)
 
-In table `_Conversation`, the default ACL authority requires master key to access.
+In table `_Conversation`, the default ACL permission requires master key to access.
 
 ```sh
 curl -X POST \
@@ -151,7 +151,7 @@ curl -X POST \
   https://{{host}}/1.2/rtm/conversations/{conv_id}/mutes
 ```
 
-return
+It returns:
 
 ```
 {"updatedAt"=>"2018-01-16T03:40:37.683Z", "objectId"=>"5a5d7433c3422b31ed845e76"}
@@ -159,7 +159,7 @@ return
 
 ### Query the mute User(s)
 
-In table `_Conversation`, the default ACL authority requires master key to access.
+In table `_Conversation`, the default ACL permission requires master key to access.
 
 ```sh
 curl -X GET \
@@ -168,7 +168,7 @@ curl -X GET \
   https://{{host}}/1.2/rtm/conversations/{conv_id}/mutes
 ```
 
-return
+It returns:
 
 ```
 {"result": ["client1", "client2"]}
@@ -187,23 +187,23 @@ curl -X POST \
   https://{{host}}/1.2/rtm/conversations/{conv_id}/messages
 ```
 
-**Warning**, due to the management nature of the interface. When you send mesages via this interface, we will not check whether **from_client**  has the authority to message in the conversation. All the requests will be approved. PLEASE BE CAUTIOUS TO USE THIS INTERFACE.
-If you used the [Rich Media format](./realtime_v2.html#Message), when sending messages **message** field has some required format, [Rich Media format guide](./realtime_rest_api.html#Rich Media format guide) has the details.
+**Warning**,since this is an management interface, when you send mesages via this interface, we will not check whether **from_client**  has the permission to message in the conversation. All the requests will be approved. PLEASE BE CAUTIOUS TO USE THIS INTERFACE.
+If you use the [Rich Media format](./realtime_v2.html#Message), the sending message's **message** field has some required format. [Rich Media format guide](./realtime_rest_api.html#Rich Media format guide) has the details.
 
 Parameters | Optionality | Description
 ---|---|---
 from_client | required | client Id of Sender
 message | required | message content (The type of the content should be string, but we have no constraint on the inner format.<br/> Theoretically, developer can send any format with size smaller than 5MB. )
-transient | optional | whether the message is transient, default on FALSE
-no_sync | optional | message will get synchronized to the online from_client users, ban this via setting it to TRUE.
+transient | optional | whether the message is transient, default to FALSE
+no_sync | optional | message will get synchronized to the online from_client users, setting this via setting it to TRUE.
 push_data | optional | set the offline push content of this message as attachment. If receiver is an iOS device and offline, we will push offline content according to this paramter. Refer to [offline push notification](./realtime-guide-intermediate.html#offline Push Notification)
-priority | optional | set priority of the message in [high,normal,low]. The parameter is not case-sensitive and default on HIGH. This parameter only works on transient and Chats Rooms messages. Messages are in queue given it has high priority but the connection is blocked.
+priority | optional | set priority of the message in [high,normal,low]. The parameter is not case-sensitive and default to HIGH. This parameter only works on transient and Chat Rooms messages. High priority messages may still be queued if the connection between server side and client side is blocked.
 mention_all| optional | boolean type, remind all the participants to have an eye on this message.
 mention_client_ids | optional | array type, tag the participants who need have eyes. No more than 20 client Ids.
 
-return: 
+It returns: 
 
-By default , the message API is asynchronous. The Message id and timestamp on Server when received  will get returned. For example: `{"msg-id":"qNkRkFWOeSqP65S9fDyHJw", "timestamp":1495431811151}`.
+By default , the message API is asynchronous. The Message id and the received timestamp on the server side  will get returned. For example: `{"msg-id":"qNkRkFWOeSqP65S9fDyHJw", "timestamp":1495431811151}`.
 
 Frequency limit:
 
@@ -212,7 +212,7 @@ this interface has frequency limitation , click [here](#interface requests frequ
 ### Query History Messages
 
 This interface requires master key.
-To ensure the encapsulation of the chat History, you can use the signature authentication, refer to [Security and Signature](realtime-guide-senior.html#Security and Signature).
+To ensure the security of the chat History, you can use the signature authentication, refer to [Security and Signature](realtime-guide-senior.html#Security and Signature).
 ```sh
 curl -X GET \
   -H "X-LC-Id: {{appid}}" \
@@ -223,20 +223,20 @@ curl -X GET \
 
 Parameters | Optionality | Description
 --- | --- | ---
-msgid | Optional | initial message id for query，**It is required to add timestamp as the startpoint of query**
+msgid | Optional | initial message id for query, **It is required to add timestamp as the startpoint of query**
 timestamp | Optional | timestamp at start of the query. Default on current time (on millisecond).
-till_msgid | Optional | final message id for query **It is required to add till_timestamp as the end of query**
-till_timestamp | Optional | timestamp at end of the query. Default on 0e (on millisecond).
-include_start | Optional | whether timestamp and msgid are included in start message, boolean, default on false.
-include_stop | Optional | whether till_timestamp and till_msgid are included in end message, boolean, default on false.
-reversed | Optional | return results on the reversed order (on descending time series by default), till_timestamp is the current timestamp, timestamp default on 0. Boolean. False by default.
-limit | Optional | number limit on return, default on 100, maximum 1000.
-client_id | Optional | viewer id（signature parameter）
-nonce | Optional | signature random string（signature parameter）
-signature_ts | Optional | signature timestamp（signature parameter），unit on milliseconnd
-signature | Optional | signature（signature parameter）
+till_msgid | Optional | final message id for query. **It is required to add till_timestamp as the end of query**
+till_timestamp | Optional | timestamp at end of the query. Default to 0(on millisecond).
+include_start | Optional | whether timestamp and msgid are included in start message, boolean, default to false.
+include_stop | Optional | whether till_timestamp and till_msgid are included in end message, boolean, default to false.
+reversed | Optional | return results on the reversed order (on descending time series by default), till_timestamp is the current timestamp, timestamp default to 0. Boolean. False by default.
+limit | Optional | number limit on return, default to 100, maximum 1000.
+client_id | Optional | viewer id (signature parameter)
+nonce | Optional | signature random string (signature parameter)
+signature_ts | Optional | signature timestamp (signature parameter)，unit on millisecond
+signature | Optional | signature (signature parameter)
 
-This interface has many time parameters. Here we get an instance for your reference. For instance, id1,id2,id3 and the timestamp t1,t2,t3 (t1 < t2 < t3), the different queried result are as follows (blank fields indicate default value):
+This interface has many time parameters. Here we have an example reference. For instance, there are three messages (id1, id2, id3) in one conversation, with timestamp t1, t2, t3 respectively (t1 < t2 < t3), the different queried result are as follows (blank fields indicate default value)for your:
 
 | timestamp| msgid| till_timestamp| till_msgid| include_start| include_stop| reversed| result |
 | ---------|---------|---------|---------|---------|---------|---------|--------- |
@@ -247,9 +247,9 @@ This interface has many time parameters. Here we get an instance for your refere
 | t1| id1| t3| id3| true| | true| id1 id2 |
 | t1| id1| t3| id3| | true| true| id2 id3 |
 
-return format, JSON array, sorted on descending timestamp by default, set `reversed` as true to return on reversed order.
+It returns a JSON array, sorted on descending timestamp by default, set `reversed` as true to return on reversed order.
 
-return:
+It returns:
 
 ```json
 [
@@ -269,10 +269,10 @@ return:
 ]
 ```
 
-### One-on-One Chatting/Group Chats-Modify the Messages
+### One-on-One Chatting/Group Chats - Modify the Messages
 
 This interface requires the master key.
-From Objective-C SDK v6.0.0、Android SDK v4.4.0、JavaScript SDK v3.5.0 ，we support the new function of modification and recall. After modification and recall, the cached messages on client terminals will get altered. For the old version，only the messages on server will get altered but not the cached client messages.
+We support the new function of modification and recall. After modification and recall, the cached messages on client terminals will get altered. For the old version，only the messages on server will get altered but not the cached client messages.
 ```sh
 curl -X PUT \
   -H "X-LC-Id: {{appid}}" \
@@ -288,7 +288,7 @@ from_client | required | sender client ID
 message | required | content
 timestamp | required | message timestamp
 
-return:
+It returns:
 ```
 {"result": {}}
 ```
@@ -315,7 +315,7 @@ Parameters | Optionality | Description
 from_client | required | sender Client ID
 timestamp | required | timestamp of the message
 
-return:
+It returns:
 ```
 {"result": {}}
 ```
@@ -338,14 +338,14 @@ curl -X DELETE \
   https://{{host}}/1.2/rtm/conversations/{conv_id}/messages/{message_id}
 ```
 
-> NOTE: this interface will delete the messages on the Server , it does no effect on the client terminal
+> NOTE: this interface will delete the messages on the server. It does no effect on the client terminal
 
 Parameters | Optionality | Description
 ---|---|---
 from_client | required | sender client ID
 timestamp | requried | message timestamp
 
-return:
+It returns:
 ```
 {}
 ```
@@ -364,16 +364,16 @@ curl -X POST \
 
 Parameters | Description
 ---|---
-client_id | prohibited Client ID, string
-ttl | prohibited time, seconds , 24h at maximum
+client_id | muted Client ID, string
+ttl | muted time, seconds, 24h at maximum
 
-return
+It returns:
 
 ```
 {}
 ```
 
-### Remove Temporary prohibited user
+### Remove Temporary muted user
 
 This interface requires master key.
 ```sh
@@ -385,20 +385,20 @@ curl -X DELETE \
   https://{{host}}/1.2/rtm/conversations/{conv_id}/temporary-silenceds
 ```
 
-return
+It returns:
 
 ```
 {}
 ```
 
-### Conversation Authority
+### Conversation Permission
 
-Refer to [Authority management and Block List](realtime-guide-senior.html#Authority management and block List)
+Refer to [Permission management and Block List](realtime-guide-senior.html#Permission management and block List)
 
-#### Add Authority
+#### Add Permission
 
 This interface requires master key.
-Each conversation is permitted to add 500 permanent prohibited users.
+Each conversation is permitted to add 500 permanent muted users.
 
 ```sh
 curl -X POST \
@@ -414,12 +414,12 @@ Parameters | Description
 clientId | user ID, string
 role | role, Enum[Member,Manager,Owner]
 
-return
+It returns:
 ```
 {"updatedAt"=>"2018-01-16T03:40:37.683Z", "objectId"=>"5a5d7433c3422b31ed845e76"}
 ```
 
-#### Delete Authority
+#### Delete Permission
 
 This interface requries master key.
 ```sh
@@ -433,12 +433,12 @@ Parameters | Description
 ---|---
 info-id | the matched objectId
 
-return
+It returns:
 ```
 {}
 ```
 
-#### Update Authority
+#### Update Permission
 
 This interface requires master key
 ```sh
@@ -456,12 +456,12 @@ clientId | user ID, string
 role | role , Enum[Member,Manager,Owner]
 info-id | the matched objectId 
 
-return
+It returns:
 ```
 {"updatedAt"=>"2018-01-16T03:40:37.683Z", "objectId"=>"5a5d7433c3422b31ed845e76"}
 ```
 
-#### Query Authority
+#### Query Permission
 
 This interface requires master key.
 ```sh
@@ -477,18 +477,18 @@ curl -X GET \
 Parameters | Description
 ---|---
 skip |
-limit | together with skip to realize pagination
+limit | together with skip to implement pagination
 role | the role included in the query
 
-返回
+It returns:
 ```
 {"results": [{"clientId"=>"client1", "objectId"=>"5a5d7433c3422b31ed845e76", "role": "Manager"}]}
 ```
 
-#### Add permanent prohibited user
+#### Add permanent muted user
 
-This interface requries master key.
-Each conversation is permitted to add 500 permanent prohibited users.
+This interface requires master key.
+Each conversation is permitted to add 500 permanent muted users.
 ```sh
 curl -X POST \
   -H "X-LC-Id: {{appid}}" \
@@ -500,15 +500,15 @@ curl -X POST \
 
 Parameters | Description
 --- | ---
-client_ids | the prohibited Client ID list , array
+client_ids | the muted Client ID list , array
 
-return
+It returns:
 
 ```
 {}
 ```
 
-#### Remove permanent prohibited user
+#### Remove permanent muted user
 
 This interface requires master key
 ```sh
@@ -519,13 +519,13 @@ curl -X DELETE \
   https://{{host}}/1.2/rtm/conversations/{conv_id}/permanent-silenceds
 ```
 
-return
+It returns:
 
 ```
 {}
 ```
 
-#### Query the permanent prohibited List
+#### Query the permanent muted List
 
 This interface requires master key
 ```sh
@@ -539,8 +539,8 @@ curl -X GET \
 
 Parameters | Optionality | Description
 ---|---|---
-limit | Optional | together with next to realize pagination, default on 10
-next | Optional | returned on the first query, the following query with this parameter to realize pagination
+limit | Optional | length of returned list,  together with next to implement pagination, default to 10
+next | Optional | returned on the first query, the following query with this parameter to implement pagination
 
 return 
 
@@ -556,7 +556,7 @@ Refer to [Blocked List](realtime-guide-senior.html#Blocked List)
 
 This interface requires master key.
 
-The blocked user will get removed from the conversation and prohibited from joining in. Each conversation can have 500 blocked users at most.
+The blocked user will get removed from the conversation and muted from joining in. Each conversation can have 500 blocked users at most.
 ```sh
 curl -X POST \
   -H "X-LC-Id: {{appid}}" \
@@ -570,7 +570,7 @@ Parameters | Description
 --- | ---
 client_ids | blocked Client ID list, array
 
-return
+It returns:
 
 ```
 {}
@@ -589,10 +589,10 @@ curl -X GET \
 
 Parameters | Optionality | Description
 ---|---|---
-limit | Optional | together with next to realize pagination , default on 10
-next | Optional | returned on the first query, the following query with this parameter to realize pagination
+limit | Optional | together with next to implement pagination , default to 10
+next | Optional | returned on the first query, the following query with this parameter to implement pagination
 
-return
+It returns:
 
 ```
 {"client_ids": ["client1", "client2"]}

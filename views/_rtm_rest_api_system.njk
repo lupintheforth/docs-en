@@ -1,4 +1,4 @@
-## Official Accounts and bots
+## Official Accounts and Bots
 
 ### Create Official Accounts
 
@@ -15,7 +15,7 @@ curl -X POST \
 
 The fields in the request are specified in [Conversation](realtime.html#Conversation).
 
-return
+It returns:
 ```
 {"objectId"=>"5a5d7432c3422b31ed845e75", "createdAt"=>"2018-01-16T03:40:32.814Z"}
 ```
@@ -39,9 +39,9 @@ Parameters | Optionality | Description
 ---|---|--- 
 skip | Optional | 
 limit | Optional | together with ski for pagination
-where | Optional | refer to [Leanstorage - Query](rest_api.html#Query).
+where | Optional | refer to [LeanStorage - Query](rest_api.html#Query).
 
-return
+It returns:
 ```
 {"results"=>[{"name"=>"My First Chatroom", "createdAt"=>"2018-01-17T04:15:33.386Z", "updatedAt"=>"2018-01-17T04:15:33.386Z", "objectId"=>"5a5ecde6c3422b738c8779d7"}]}
 ```
@@ -59,7 +59,7 @@ curl -X PUT \
   https://{{host}}/1.2/rtm/service-conversations/{conv_id}
 ```
 
-return
+It returns:
 ```
 {"updatedAt"=>"2018-01-16T03:40:37.683Z", "objectId"=>"5a5d7433c3422b31ed845e76"}
 ```
@@ -75,7 +75,7 @@ curl -X DELETE \
   https://{{host}}/1.2/rtm/service-conversations/{conv_id}
 ```
 
-return
+It returns:
 ```
 {}
 ```
@@ -91,7 +91,7 @@ curl -X POST \
   https://{{host}}/1.2/rtm/service-conversations/{conv_id}/subscribers
 ```
 
-return
+It returns:
 ```
 {}
 ```
@@ -105,12 +105,12 @@ curl -X DELETE \
   https://{{host}}/1.2/rtm/service-conversations/{conv_id}/subscribers/{client_id}
 ```
 
-return
+It returns:
 ```
 {}
 ```
 
-### Traverse through all the subscribers - Query
+### Traverse Through All the Subscribers
 
 This interface requires master key.
 
@@ -132,9 +132,9 @@ return
  {"timestamp":1491467852768,"subscriber":"client id 2","conv_id":"55b872"}, ...]
 ```
 
-timestamp is the time of subscription. Subscriber is client_id. If the query is not exhaustive, the last client_id should be retrieved for the next query.
+`timestamp` is the time of subscription, and `subscriber` is the `client_id`. If the query is not exhaustive, the last `client_id` in the results should be passed as the client_id parameter of the next query.
 
-### Query the count of the subscribers
+### Query the Count the Subscribers
 
 This interface requires master key.
 ```sh
@@ -144,13 +144,13 @@ curl -X GET \
   https://{{host}}/1.2/rtm/service-conversations/{conv_id}/subscribers/count
 ```
 
-return
+It returns:
 
 ```
 {"count": 100}
 ```
 
-### Message all the subscribers
+### Message All the Subscribers
 
 This interface requires master key.
 
@@ -169,7 +169,7 @@ from_client | Required | sender client Id
 message | Required | message body
 push | Optional | attached push content. If configured,  iOS and Windows Phone user will receive this push notification. String or JSON object.
 
-return
+It returns:
 ```
 {"msg-id":"qNkRkFWOeSqP65S9fDyHJw", "timestamp":1495431811151}
 ```
@@ -178,7 +178,7 @@ Frequency limit:
 
 this interface has frequency limitation , click [here](#interface requests frequency limitation) to view.
 
-### Modify all the messages to subscribers
+### Modify All the Messages to Subscribers
 
 This interface requires master key.
 
@@ -199,7 +199,7 @@ from_client | Required | sender client ID
 message | Required | message body
 timestamp | Required | message timestamp
 
-return
+It returns:
 ```
 {"result": {}}
 ```
@@ -208,7 +208,7 @@ Frequency limit:
 
 this interface has frequency limitation , click [here](#interface requests frequency limitation) to view.
 
-### Recall messages to all subscribers
+### Recall Messages to All Subscribers
 
 This interface requires master key. It should be used in combination with matching SDK. See [Modify Messages](#Modify Messages) interface.
 
@@ -225,7 +225,7 @@ Parameters | Optionality | Description
 from_client | Required | sender client ID 
 timestamp | Required | message timestamp
 
-return
+It returns:
 ```
 {"result": {}}
 ```
@@ -233,7 +233,7 @@ Frequency limit:
 
 this interface has frequency limitation , click [here](#interface requests frequency limitation) to view.
 
-### Message any subscriber privately
+### Message any Subscriber Privately
 
 This interface requires master key.
 
@@ -259,15 +259,13 @@ no_sync | optional | message will get synchronized to the online from_client use
 push_data | optional | set the offline push content of this message as attachment. If receiver is an iOS device and offline, we will push offline content according to this paramter. Refer to [offline push notification](./realtime-guide-intermediate.html#offline Push Notification)
 priority | optional | set priority of the message in [high,normal,low]. The parameter is not case-sensitive and default on HIGH. This parameter only works on transient and Chats Rooms messages. Messages are in queue given it has high priority but the connection is blocked.
 
-return
-
 By default , the message API is asynchronous. The Message id and timestamp on Server when received  will get returned. For example: `{"msg-id":"qNkRkFWOeSqP65S9fDyHJw", "timestamp":1495431811151}`.
 
 Frequency limit:
 
 this interface has frequency limitation , click [here](#interface requests frequency limitation) to view.
 
-### Modify the private message to the user
+### Modify the Private Message to the User
 
 This interface requires master key.
 
@@ -289,7 +287,7 @@ message | required | message body
 timestamp | required | message timestamp
 to_clients | required | array type, list of client to receive messages , 20 Ids at most.
 
-return
+It returns:
 ```
 {"result": {}}
 ```
@@ -298,7 +296,7 @@ Frequency limit:
 
 this interface has frequency limitation , click [here](#interface requests frequency limitation) to view.
 
-### Recall the private message 
+### Recall the Private Message 
 
 This interface requires master key. It should be used in combination with matching SDK. See [Modify Messages](#Modify Messages) interface.
 
@@ -318,7 +316,7 @@ message | required | message body
 timestamp | required | message timestamp
 to_clients | required | array type, list of client to receive messages , 20 Ids at most.
 
-return
+It returns:
 ```
 {"result": {}}
 ```
@@ -327,7 +325,7 @@ Frequency limit:
 
 this interface has frequency limitation , click [here](#interface requests frequency limitation) to view.
 
- ### Delete private messages to users
+ ### Delete Private Messages to Users
 
  This interface requires master key and only works on subscription messages and private messages. To delete broadcast, please refer to [delete broadcast](realtime_rest_api.html).
 
@@ -348,12 +346,12 @@ Parameters | Optional | Description
 from_client | required | sender client ID
 timestamp | required | message timestamp
 
-return:
+It returns:
 ```
 {}
 ```
  
-### Query the message send from Official Account
+### Query the Message sent from Official Account
 
 This interface requires master key. The result contains broadcast from the Official Accounts and private messages.
 
@@ -367,7 +365,7 @@ curl -X GET \
 
 parameters and returned value resembles [query history messages](#query history messages).
 
-### Blocked list
+### Blocked List
 
 This interface requires master key.
 
@@ -385,7 +383,7 @@ Parameters | Description
 ---|---
 client_ids | blocked Client ID list, array
 
-return
+It returns:
 ```
 {}
 ```
@@ -401,7 +399,7 @@ curl -X DELETE \
   https://{{host}}/1.2/rtm/service-conversations/{conv_id}/blacklists
 ```
 
-return
+It returns:
 
 ```
 {}
@@ -419,14 +417,11 @@ curl -X GET \
 
 Parameters | Optionality | Description
 ---|---|---
-limit | Optional | together with next to realize pagination , default on 10
-next | Optional | returned on the first query, the following query with this parameter to realize pagination
+limit | Optional | together with next to implement pagination , default on 10
+next | Optional | returned on the first query, the following query with this parameter to implement pagination
 
-return
+It returns:
 
 ```
 {"client_ids": ["client1", "client2"]}
 ```
-
-
-

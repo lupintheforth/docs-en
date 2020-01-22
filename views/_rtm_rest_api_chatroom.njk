@@ -1,8 +1,8 @@
-## Chats Rooms
+## Chat Rooms
 
-### Create Chats Rooms
+### Create Chat Rooms
 
-In `_Conversation` table , the default ACL authority requires master key to create.
+In `_Conversation` table , the default ACL permission requires master key to create.
 
 ```sh
 curl -X POST \
@@ -14,14 +14,14 @@ curl -X POST \
 ```
 The fields in the request are specified in [Conversation](realtime.html#Conversation).
 
-return
+It returns:
 ```
 {"objectId"=>"5a5d7432c3422b31ed845e75", "createdAt"=>"2018-01-16T03:40:32.814Z"}
 ```
 
-### Query the Chats Rooms
+### Query the Chat Rooms
 
-In `_Conversation` table , the default ACL authority requires master key to create.
+In `_Conversation` table , the default ACL permission requires master key to create.
 
 ```sh
 curl -X GET \
@@ -37,17 +37,17 @@ curl -X GET \
 Parameters | Optionality | Description
 ---|---|--- 
 skip | Optional | 
-limit | Optional | together with ski for pagination
-where | Optional | refer to [Leanstorage - Query](rest_api.html#Query).
+limit | Optional | together with skip for pagination
+where | Optional | refer to [Leanstorage - Query](rest_api.html#Queries).
 
-return
+It returns:
 ```
 {"results"=>[{"name"=>"My First Chatroom", "createdAt"=>"2018-01-17T04:15:33.386Z", "updatedAt"=>"2018-01-17T04:15:33.386Z", "objectId"=>"5a5ecde6c3422b738c8779d7"}]}
 ```
 
 ### Update Chatrooms
 
-In `_Conversation` table the default ACL authority requires master key to update.
+In `_Conversation` table the default ACL permission requires master key to update.
 
 ```sh
 curl -X PUT \
@@ -58,14 +58,14 @@ curl -X PUT \
   https://{{host}}/1.2/rtm/chatrooms/{chatroom_id}
 ```
 
-return
+It returns:
 ```
 {"updatedAt"=>"2018-01-16T03:40:37.683Z", "objectId"=>"5a5d7433c3422b31ed845e76"}
 ```
 
 ### Delete Chatrooms
 
-In `_Conversation` table the default ACL authority requires master key to update.
+In `_Conversation` table the default ACL permission requires master key to update.
 
 ```sh
 curl -X DELETE \
@@ -74,12 +74,12 @@ curl -X DELETE \
   https://{{host}}/1.2/rtm/chatrooms/{chatroom_id}
 ```
 
-return
+It returns:
 ```
 {}
 ```
 
-### Get the online users Randomly
+### Get the Online Users Randomly
 
 This interface requires master key.
 ```sh
@@ -89,7 +89,7 @@ curl -X GET \
   https://{{host}}/1.2/rtm/chatrooms/{chatroom_id}/members
 ```
 
-return
+It returns:
 ```
 {"result": ["clientid1", "clientid2", "clientid3"]}
 ```
@@ -104,7 +104,7 @@ curl -X GET \
   https://{{host}}/1.2/rtm/chatrooms/{chatroom_id}/members/online-count
 ```
 
-return
+It returns:
 ```
 {"result": 3}
 ```
@@ -121,7 +121,7 @@ curl -X POST \
   -d '{"from_client": "", "message": ""}' \
   https://{{host}}/1.2/rtm/chatrooms/{chatroom_id}/messages
 ```
-**Warning**, due to the management nature of the interface. When you send meesages via this interface, we will not check whether **from_client**  has the authority to message in the conversation. All the requests will be approved. PLEASE BE CAUTIOUS TO USE THIS INTERFACE.
+**Warning**, due to the management nature of the interface. When you send meesages via this interface, we will not check whether **from_client**  has the permission to message in the conversation. All the requests will be approved. PLEASE BE CAUTIOUS TO USE THIS INTERFACE.
 If you used the [Rich Media format](./realtime_v2.html#Message), when sending messages **message** field has some required format, [Rich Media format guide](./realtime_rest_api.html#Rich Media format guide) has the details. In addition, chatroom **does not support** synchronously send messages to these online **from_client**.
 
 Parameters | Optionality | Description
@@ -130,14 +130,10 @@ from_client | required | client Id of Sender
 message | required | message content (The type of the content should be string, but we have no constraint on the inner format.<br/> Theoretically, developer can send any format with size smaller than 5MB. )
 transient | optional | whether the message is transient, default on FALSE
 no_sync | optional | message will get synchronized to the online from_client users, ban this via setting it to TRUE.
-push_data | optional | set the offline push content of this message as attachment. If receiver is an iOS device and offline, we will push offline content according to this paramter. Refer to [offline push notification](./realtime-guide-intermediate.html#offline Push Notification)
-priority | optional | set priority of the message in [high,normal,low]. The parameter is not case-sensitive and default on HIGH. This parameter only works on transient and Chats Rooms messages. Messages are in queue given it has high priority but the connection is blocked.
+push_data | optional | set the offline push content of this message as attachment. If receiver is an iOS device and offline, we will push offline content according to this parameter. Refer to [offline push notification](./realtime-guide-intermediate.html#offline Push Notification)
+priority | optional | set priority of the message in [high,normal,low]. The parameter is not case-sensitive and default on HIGH. This parameter only works on transient and Chat Rooms messages. Messages are in queue given it has high priority but the connection is blocked.
 mention_all| optional | boolean type, remind all the participants to have an eye on this message.
 mention_client_ids | optional | array type, tag the participants who need have eyes. No more than 20 client Ids.
-
-return:
-
-return: 
 
 By default , the message API is asynchronous. The Message id and timestamp on Server when received  will get returned. For example: `{"msg-id":"qNkRkFWOeSqP65S9fDyHJw", "timestamp":1495431811151}`.
 
@@ -233,7 +229,7 @@ Frequency limit:
 
 This interface has frequency limit, click [here](#Interface Requests Frequency limit) for details.
 
-### One-on-One Chatting/Group Chats - Recall the Messages
+### Chatrooms - Recall the Messages
 
 This interface requries master key. It should be used in combination with matching SDK. See [Modify Messages](#Modify Messages) interface.
 
@@ -300,7 +296,7 @@ Parameters | Description
 client_id | prohibited Client ID, string
 ttl | prohibited time, seconds , 24h at maximum
 
-return
+It returns:
 
 ```
 {}
@@ -346,7 +342,7 @@ Parameters | Description
 clientId | user ID, string
 role | role, Enum[Member,Manager,Owner]
 
-return
+It returns:
 ```
 {"updatedAt"=>"2018-01-16T03:40:37.683Z", "objectId"=>"5a5d7433c3422b31ed845e76"}
 ```
@@ -366,7 +362,7 @@ Parameters | Description
 ---|---
 info-id | the matched objectId
 
-return
+It returns:
 ```
 {}
 ```
@@ -390,7 +386,7 @@ clientId | user ID, string
 role | role , Enum[Member,Manager,Owner]
 info-id | the matched objectId 
 
-return
+It returns:
 ```
 {"updatedAt"=>"2018-01-16T03:40:37.683Z", "objectId"=>"5a5d7433c3422b31ed845e76"}
 ```
@@ -412,10 +408,10 @@ curl -X GET \
 Parameters | Description
 ---|---
 skip |
-limit | together with skip to realize pagination
+limit | together with skip to implement pagination
 role | the role included in the query
 
-返回
+It returns:
 ```
 {"results": [{"clientId"=>"client1", "objectId"=>"5a5d7433c3422b31ed845e76", "role": "Manager"}]}
 ```
@@ -438,7 +434,7 @@ Parameters | Description
 --- | ---
 client_ids | the prohibited Client ID list , array
 
-return
+It returns:
 
 ```
 {}
@@ -456,7 +452,7 @@ curl -X DELETE \
   https://{{host}}/1.2/rtm/chatrooms/{conv_id}/permanent-silenceds
 ```
 
-return
+It returns:
 
 ```
 {}
@@ -477,8 +473,8 @@ curl -X GET \
 
 Parameters | Optionality | Description
 ---|---|---
-limit | Optional | together with next to realize pagination, default on 10
-next | Optional | returned on the first query, the following query with this parameter to realize pagination
+limit | Optional | together with next to implement pagination, default on 10
+next | Optional | returned on the first query, the following query with this parameter to implement pagination
 
 return 
 
@@ -509,7 +505,7 @@ Parameters | Description
 --- | ---
 client_ids | blocked Client ID list, array
 
-return
+It returns:
 
 ```
 {}
@@ -527,7 +523,7 @@ curl -X DELETE \
   https://{{host}}/1.2/rtm/chatrooms/{chatroom_id}/blacklists
 ```
 
-返回
+It returns:
 
 ```
 {}
@@ -547,10 +543,10 @@ curl -X GET \
 
 Parameters | Optionality | Description
 ---|---|---
-limit | Optional | together with next to realize pagination , default on 10
-next | Optional | returned on the first query, the following query with this parameter to realize pagination
+limit | Optional | length of the returned list, together with next to implement pagination , default on 10
+next | Optional | returned on the first query, the following query with this parameter to implement pagination
 
-return
+It returns:
 
 ```
 {"client_ids": ["client1", "client2"]}
