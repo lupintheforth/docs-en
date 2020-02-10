@@ -1374,6 +1374,7 @@ Operators | Example | k is not an array | k is an array
 n/a | `where={"k":2}` | `k == 2` | `k` contains 2
 `in` | `where={"k":{"$in":[2,3]}}` | `k` is 2 or 3 | `k` contains 2 or 3
 `all` | `where={"arrayKey":{"$all":[2,3]}}` | n/a | `k` contains 2 and 3
+`size` | `where={"arrayKey":{"$size": 3}}` | n/a | `k` has a length of 3 
 
 ### Pointer Queries
 
@@ -2414,3 +2415,164 @@ curl -X GET \
 ```
 
 Data schema can be used with tools such as code generators and internal management interfaces.
+
+## Exporting Your Data
+
+For security concerns, master key is required to export your data:
+
+```
+curl -X POST \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  -H "Content-Type: application/json" \
+  -d '{}' \
+  https://{{host}}/1.1/exportData
+```
+
+To specify date range (`updatedAt`) of data to export:
+
+```
+curl -X POST \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  -H "Content-Type: application/json" \
+  -d '{"from_date":"2015-09-20", "to_date":"2015-09-25"}' \
+  https://{{host}}/1.1/exportData
+```
+
+To specify classes of data to export:
+
+```
+curl -X POST \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  -H "Content-Type: application/json" \
+  -d '{"classes":"_User,GameScore,Post"}' \
+  https://{{host}}/1.1/exportData
+```
+
+Just export the schema (no data will be exported):
+
+```
+curl -X POST \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  -H "Content-Type: application/json" \
+  -d '{"only-schema":"true"}' \
+  https://{{host}}/1.1/exportData
+```
+
+Exported schema file can be imported into other applications via the import data function in dashboard.
+
+After the data exported, LeanCloud will send an email to the application creator, containing the url to download the data.
+You can also specify the address to receive this email:
+
+```
+curl -X POST \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"username@exmaple.com"}' \
+  https://{{host}}/1.1/exportData
+```
+
+The export data job id will be returned:
+
+```json
+{
+  "status":"running",
+  "id":"1wugzx81LvS5R4RHsuaeMPKlJqFMFyLwYDNcx6LvCc6MEzQ2",
+  "app_id":"{{appid}}"
+}
+```
+
+You can also query the export data job status via the id returned previously:
+
+```
+curl -X GET \
+  -H "X-LC-Id: {{appid}}" \
+  -H "X-LC-Key: {{masterkey}},master" \
+  https://{{host}}/1.1/exportData/1wugzx81LvS5R4RHsuaeMPKlJqFMFyLwYDNcx6LvCc6MEzQ2
+```
+
+If the job status is `done`, the download url will also be returned:
+
+```json
+{
+  "status":"done",
+  "download_url": "https://download.leancloud.cn/export/example.tar.gz",
+  "id":"1wugzx81LvS5R4RHsuaeMPKlJqFMFyLwYDNcx6LvCc6MEzQ2",
+  "app_id":"{{appid}}"
+}
+```
+
+If the job status is still `running`, you can query it again later.
+
+## Other
+
+### Server Time
+
+To retrieve LeanCloud server's current time:
+
+```
+curl -i -X GET \
+    -H "X-LC-Id: {{appid}}" \
+    -H "X-LC-Key: {{appkey}}" \
+    https://{{host}}/1.1/date
+```
+
+Returned date is in UTC:
+
+```json
+{
+  "iso": "2015-08-27T07:38:33.643Z",
+  "__type": "Date"
+}
+```
+
+## CORS Workarounds
+
+LeanCloud supports wrapping GET, PUT, and DELETE requests in a POST request:
+
+- Specify the intended HTTP method in the `_method` parameter.
+- Specify `appid` and `appkey` in `_ApplicationId` and `_ApplicationKey` parameters.
+
+This is a workaround for certain platforms.
+It is recommended to follow HTML CORS standard instead.
+
+### GET
+
+```
+  curl -i -X POST \
+  -H "Content-Type: text/plain" \
+  -d \
+  '{"_method":"GET",
+    "_ApplicationId":"{{appid}}",
+    "_ApplicationKey":"{{appkey}}"}' \
+  https://{{host}}/1.1/classes/Post/<objectId>
+```
+
+### PUT
+
+```
+curl -i -X POST \
+  -H "Content-Type: text/plain" \
+  -d \
+  '{"_method":"PUT",
+    "_ApplicationId":"{{appid}}",
+    "_ApplicationKey":"{{appkey}}",
+    "upvotes":99}' \
+  https://{{host}}/1.1/classes/Post/<objectId>
+```
+
+### DELETE
+
+```
+curl -i -X POST \
+  -H "Content-Type: text/plain" \
+  -d \
+  '{"_method":  "DELETE",
+    "_ApplicationId":"{{appid}}",
+    "_ApplicationKey":"{{appkey}}"}' \
+  https://{{host}}/1.1/classes/Post/<objectId>
+```

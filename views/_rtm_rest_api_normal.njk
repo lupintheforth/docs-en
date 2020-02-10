@@ -540,9 +540,9 @@ curl -X GET \
 Parameters | Optionality | Description
 ---|---|---
 limit | Optional | length of returned list,  together with next to implement pagination, default to 10
-next | Optional | returned on the first query, the following query with this parameter to implement pagination
+next | Optional | returned on the first query, and the following query will use this parameter to implement pagination
 
-return 
+It returns: 
 
 ```
 {"client_ids": ["client1", "client2"]}
@@ -590,7 +590,7 @@ curl -X GET \
 Parameters | Optionality | Description
 ---|---|---
 limit | Optional | together with next to implement pagination , default to 10
-next | Optional | returned on the first query, the following query with this parameter to implement pagination
+next | Optional | returned on the first query, and the following query will use this parameter to implement pagination
 
 It returns:
 

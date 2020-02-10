@@ -167,7 +167,7 @@ Parameters | Optionality | Description
 ---|---|---
 from_client | Required | sender client Id
 message | Required | message body
-push | Optional | attached push content. If configured,  iOS and Windows Phone user will receive this push notification. String or JSON object.
+push | Optional | attached push content. If configured, iOS and Android user will receive this push notification. String or JSON object.
 
 It returns:
 ```
@@ -418,7 +418,7 @@ curl -X GET \
 Parameters | Optionality | Description
 ---|---|---
 limit | Optional | together with next to implement pagination , default on 10
-next | Optional | returned on the first query, the following query with this parameter to implement pagination
+next | Optional | returned on the first query, and the following query will use this parameter to implement pagination
 
 It returns:
 

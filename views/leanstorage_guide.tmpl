@@ -2568,6 +2568,39 @@ query.whereKey("tags", .equalTo("work"))
 ```
 {% endif %}
 
+To look for objects whose array field `tags` contains three elements:
+
+{% if platform_name === "Objective-C" %}
+```objc
+[query whereKey:@"tags" sizeEqualTo:3];
+```
+{% endif %}
+{% if platform_name === "JavaScript" %}
+```js
+query.sizeEqualTo('tags', 3);
+```
+{% endif %}
+{% if platform_name === "Python" %}
+```python
+query.size_equal_to('tags', 3)
+```
+{% endif %}
+{% if platform_name === "PHP" %}
+```php
+$query->sizeEqualTo("tags", 3);
+```
+{% endif %}
+{% if platform_name === "Android / Java" %}
+```java
+query.whereSizeEqual("tags", 3);
+```
+{% endif %}
+{% if platform_name === "Swift" %}
+```swift
+query.whereKey("tags", .equalToSize(3))
+```
+{% endif %}
+
 You can also look for objects whose array field `tags` contains `work`, `sales`, **and** `appointment`:
 
 {% if platform_name === "Objective-C" %}
