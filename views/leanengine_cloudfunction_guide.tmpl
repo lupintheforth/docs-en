@@ -2137,7 +2137,7 @@ You can set up timers to schedule your cloud functions. For example, to clean up
 The time restrictions applied to ordinary cloud functions also apply to scheduled functions. See [Timeouts](#timeouts).
 
 {% call docs.noteWrap() %}
-A timer will be disabled if it triggers more than 30 `400` (Bad Request) or `502` (Bad Gateway) errors within the past 24 hours. The system will also send out a reminder email to you regarding the issue. The error log [`timerAction short-circuited and no fallback available`](#error-messages-for-scheduled-tasks) will also be printed out in the web console.
+If a timer triggers more than 30 `400` (Bad Request) or `502` (Bad Gateway) errors within the past 24 hours, the system will disable it and send a email to you regarding the issue. The error log [`timerAction short-circuited and no fallback available`](#error-messages-for-scheduled-tasks) will also be printed out in the web console.
 {% endcall %}
 
 After deploying your program to LeanEngine, go to your app's [Dashboard > LeanEngine > Scheduled tasks](https://console.leancloud.app/cloud.html?appid={{appid}}#/task) and click on **Create a timer** to create a timer for a cloud function. For example, if we have a function named `logTimer`:
@@ -2174,7 +2174,89 @@ public static float logTimer throws Exception {
 
 After a timer is created, the default status of it will be `Disabled`. You need to click on <span class="label label-default">Enable</span> to activate the timer. You can see the logs of the timer in [Dashboard > LeanEngine > App logs](https://console.leancloud.app/cloud.html?appid={{appid}}#/log).
 
-You can set up timers with either [cron expressions](http://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/tutorial-lesson-06.html) or intervals with **seconds** as the unit. For example, to run a function at 8:00 every Monday, use `0 0 8 ? * MON` as the cron expression.
+You can specify the times a task gets triggered using one of the following expressions:
+
+- CRON expression
+- Interval in seconds
+
+Take CRON expression as an example. To send push notifications to users at 8am every Monday, first define a cloud function:
+
+{% if platformName === "Node.js" %}
+```js
+AV.Cloud.define('pushTimer', function(request){
+  return AV.Push.send({
+    channels: ['Public'],
+    data: {
+      alert: 'Public message'
+    }
+  });
+});
+```
+{% endif %}
+{% if platformName === "Python" %}
+{# TODO #}
+{% endif %}
+{% if platformName === "PHP" %}
+```php
+use \LeanCloud\Push;
+
+Cloud::define("pushTimer", function($params, $user) {
+    $push = new Push(array("alert" => "Public message"));
+    $push->setChannels(array("Public"));
+    $push->send();
+});
+```
+{% endif %}
+{% if platformName === "Java" %}
+{# TODO #}
+{% endif %}
+{% if platformName === ".NET" %}
+{# TODO #}
+{% endif %}
+
+Then create a timer for the function using **CRON expression** and enter `0 0 8 ? * MON` for it.
+
+### CRON Expressions
+
+The basic syntax of a CRON expression is:
+
+```
+<seconds> <minutes> <hours> <day-of-month> <month> <day-of-week>
+```
+
+Position|Field|Constraints|Range|Special Characters Accepted
+---|---|---|---|---
+1|Seconds|Reqduired|0-59|`, - * /`
+2|Minutes|Reqduired|0-59|`, - * /`
+3|Hours|Reqduired|0-23 (0 is midnight)|`, - * /`
+4|Day of month|Reqduired|1-31|`, - * ? /`
+5|Month|Reqduired|1-12、JAN-DEC|`, - * /`
+6|Day of week|Reqduired|1-7、SUN-SAT|`, - ? /`
+
+Special characters can be used in the following ways:
+
+Character|Meaning|Usage
+---|---|---
+`*`|All values|All the values a field can have. For example, to run a task on every minute, set `<minutes>` to be `*`.
+`?`|Unspecified value|Can be used on at most one of the two fields that accept this value. For example, to run a task on the 10th of every month regardless of what day it is, set `<day-of-month>` to be `10` and `<day-of-week>` to be `?`.
+`-`|Scope|For example, setting `<hours>` to be `10-12` means 10am, 11am, and 12pm.
+`,`|<span class="text-nowrap">Splitting multiple values</span>|For example, setting `<day-of-week>` to be `MON,WED,FRI` means Monday, Wednesday, and Friday.
+`/`|Increment|For example, setting `<seconds>` to be `0/15` means every 15 seconds starting from the 0th, which are the 0th, 15th, 30th, and 45th seconds. If we say `5/15`, it means the 5th, 20th, 35th, and 50th seconds. `*/` is equivalent to `0/`. For example, setting `<day-of-month>` to be `1/3` means to run a task every 3 days starting from the first day of every month.
+
+Fields are concatenated with spaces. Values like `JAN-DEC` and `SUN-SAT` are case-insensitive (`MON` is the same as `mon`).
+
+To illustrate:
+
+Expression|Explanation
+---|---
+`0  */5 * * * ?`|Run a task every 5 minutes.
+`10 */5 * * * ?`|Run a task every 5 minutes and the time to run it is always the 10th second of a minute (like 10:00:10, 10:05:10, etc.).
+<code style="white-space:nowrap;">0 30 10-13 ? * WED,FRI</code>|Run a task at the 10:30am, 11:30am, 12:30am, and 1:30pm of every Wednesday and Friday.
+`0 */30 8-9 5,20 * ?`|Run a task every 30 minutes between 8am and 10am (8:00am, 8:30am, 9:00am, and 9:30am) on the 5th and 20th of every month.
+
+The time zone followed by CRON expressions is `UTC+0`.
+
+### Maximum Amounts of Timers
 
 You can create up to 6 timers for each of the staging environment and the production environment, which means that you can create 12 timers in total.
 

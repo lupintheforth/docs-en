@@ -363,7 +363,7 @@ If you prefer viewing logs with a different tool in your computer, you can expor
 $ lean logs --from=2017-07-01 --to=2017-07-07 --format=json > leanengine.logs
 ```
 
-`--from` and `--to` use local timezone (the timezone on the machine executing `lean-cli`).
+`--from` and `--to` use local time zone (the time zone on the machine executing `lean-cli`).
 
 ## Viewing LeanStorage Status Reports
 

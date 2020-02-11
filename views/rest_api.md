@@ -1403,7 +1403,7 @@ curl -X GET \
 ```
 
 Be aware that the `limit` parameter (default 100, max 1000) also applies to inner queries.
-Thus you may need to construct queries to get expected result deliberately.
+Thus you may need to construct queries deliberately to get the expected result.
 Refer to [Caveats about Inner Queries](leanstorage_guide-js.html#Caveats_about_Inner_Queries) for more details.
 
 To include pointed objects in one query, use `include` parameter.
